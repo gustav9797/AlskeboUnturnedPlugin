@@ -9,3 +9,14 @@ C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin
 C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\obj\Debug\AlskeboUnturnedPlugin.csprojResolveAssemblyReference.cache
 C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\obj\Debug\AlskeboUnturnedPlugin.dll
 C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\obj\Debug\AlskeboUnturnedPlugin.pdb
+C:\git\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Debug\AlskeboUnturnedPlugin.dll
+C:\git\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Debug\AlskeboUnturnedPlugin.pdb
+C:\git\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Debug\Assembly-CSharp-firstpass.dll
+C:\git\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Debug\Assembly-CSharp.dll
+C:\git\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Debug\Rocket.API.dll
+C:\git\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Debug\Rocket.Core.dll
+C:\git\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Debug\Rocket.Unturned.dll
+C:\git\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Debug\UnityEngine.dll
+C:\git\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\obj\Debug\AlskeboUnturnedPlugin.csprojResolveAssemblyReference.cache
+C:\git\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\obj\Debug\AlskeboUnturnedPlugin.dll
+C:\git\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\obj\Debug\AlskeboUnturnedPlugin.pdb

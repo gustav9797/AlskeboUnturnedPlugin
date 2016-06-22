@@ -14,6 +14,15 @@ namespace AlskeboUnturnedPlugin
 {
     public class AlskeboUnturnedPlugin : RocketPlugin
     {
+        class PlayerData
+        {
+            public bool isDriving = false;
+        }
+
+        Dictionary<string, InteractableVehicle> playerVehicles;
+        Dictionary<ushort, UnturnedPlayer> vehiclePlayers;
+        Dictionary<string, PlayerData> playerDataMap;
+
         public override void LoadPlugin()
         {
             base.LoadPlugin();
@@ -29,13 +38,62 @@ namespace AlskeboUnturnedPlugin
 
         private void onPlayerUpdateStat(UnturnedPlayer player, EPlayerStat status)
         {
-            Logger.LogWarning("\ttest");
-            if (status == SDG.Unturned.EPlayerStat.TRAVEL_VEHICLE)
+            PlayerData playerData = playerDataMap[player.Id];
+            if (playerData == null)
             {
-                UnturnedChat.Say(player, "You probably entered a vehicle?");
+                playerData = new PlayerData();
+                playerDataMap.Add(player.Id, playerData);
+            }
+
+           // player.id
+            Logger.LogWarning("\ttest");
+            if (status == SDG.Unturned.EPlayerStat.TRAVEL_VEHICLE && !playerData.isDriving)
+            {
+                if (getClaimedVehicle(player) != player.CurrentVehicle)
+                {
+                    UnturnedChat.Say(player, "You have claimed a new vehicle.");
+                }
+                else
+                    UnturnedChat.Say(player, "You have entered your claimed vehicle.");
+            }
+            else if (status != SDG.Unturned.EPlayerStat.TRAVEL_VEHICLE && playerData.isDriving)
+            {
+                UnturnedChat.Say(player, "You have exited your claimed vehicle.");
             }
             else
                 UnturnedChat.Say(player, "Something happened! " + status.ToString());
+        }
+
+        private void claimVehicle(UnturnedPlayer player, InteractableVehicle vehicle)
+        {
+            if (vehiclePlayers.ContainsKey(vehicle.id))
+            {
+                unclaimVehicle(vehiclePlayers[vehicle.id]);
+            }
+            if (getClaimedVehicle(player) != vehicle)
+            {
+                unclaimVehicle(player);
+                playerVehicles.Add(player.Id, vehicle);
+                vehiclePlayers.Add(vehicle.id, player);
+            }
+        }
+        private void unclaimVehicle(UnturnedPlayer player)
+        {
+            InteractableVehicle vehicle = getClaimedVehicle(player);
+            if (!vehicle)
+                return;
+            playerVehicles.Remove(player.Id);
+            vehiclePlayers.Remove(vehicle.id);
+            
+            if (vehicle.fuel <= 0)
+                UnturnedChat.Say(player, "TODO: Destroy old vehicle.");
+
+        }
+        private InteractableVehicle getClaimedVehicle(UnturnedPlayer player)
+        {
+            if (playerVehicles.ContainsKey(player.Id))
+                return playerVehicles[player.Id];
+            return null;
         }
 
     }
