@@ -13,3 +13,4 @@ C:\git\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Debug\UnityEngine.dll
 C:\git\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\obj\Debug\AlskeboUnturnedPlugin.csprojResolveAssemblyReference.cache
 C:\git\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\obj\Debug\AlskeboUnturnedPlugin.dll
 C:\git\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\obj\Debug\AlskeboUnturnedPlugin.pdb
+C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\obj\Debug\AlskeboUnturnedPlugin.csprojResolveAssemblyReference.cache
