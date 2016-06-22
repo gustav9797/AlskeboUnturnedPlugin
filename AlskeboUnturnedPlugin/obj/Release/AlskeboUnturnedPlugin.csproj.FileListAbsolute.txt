@@ -1,0 +1,10 @@
+C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\AlskeboUnturnedPlugin.dll
+C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\AlskeboUnturnedPlugin.pdb
+C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\Assembly-CSharp-firstpass.dll
+C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\Assembly-CSharp.dll
+C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\Rocket.API.dll
+C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\Rocket.Core.dll
+C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\Rocket.Unturned.dll
+C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\UnityEngine.dll
+C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\obj\Release\AlskeboUnturnedPlugin.dll
+C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\obj\Release\AlskeboUnturnedPlugin.pdb
