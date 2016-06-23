@@ -12,12 +12,15 @@ using UnityEngine;
 
 namespace AlskeboUnturnedPlugin {
     public class AlskeboVehicleManager {
-        Dictionary<CSteamID, List<uint>> playerOwnedVehicles = new Dictionary<CSteamID, List<uint>>();
+
+        Dictionary<CSteamID, List<VehicleInfo>> playerOwnedVehicles = new Dictionary<CSteamID, List<VehicleInfo>>();
         Dictionary<uint, CSteamID> vehicleOwners = new Dictionary<uint, CSteamID>();
-        Dictionary<uint, VehicleInfo> vehiclesToBeDestroyed = new Dictionary<uint, VehicleInfo>();
+        Dictionary<uint, DestroyingVehicleInfo> vehiclesToBeDestroyed = new Dictionary<uint, DestroyingVehicleInfo>();
+        List<ushort> vehicleDestroySounds = new List<ushort> { 19, 20, 35, 36, 37, 53, 61, 62, 63, 65, 69, 71, 72, 81, 89 };
+        System.Random r = new System.Random();
 
         public AlskeboVehicleManager() {
-            Timer timer = new Timer(700);
+            Timer timer = new Timer(200);
             timer.Elapsed += tick;
             timer.Start();
         }
@@ -30,7 +33,7 @@ namespace AlskeboUnturnedPlugin {
         public void onPlayerExitVehicle(UnturnedPlayer player, InteractableVehicle vehicle) {
             if (vehicle != null && getVehicleOwner(vehicle) == CSteamID.Nil) {
                 if (vehicle.fuel <= 5 && !vehiclesToBeDestroyed.ContainsKey(vehicle.instanceID)) {
-                    VehicleInfo info = new VehicleInfo();
+                    DestroyingVehicleInfo info = new DestroyingVehicleInfo();
                     info.vehicle = vehicle;
                     info.lastActivity = DateTime.Now;
                     vehiclesToBeDestroyed.Add(vehicle.instanceID, info);
@@ -40,15 +43,15 @@ namespace AlskeboUnturnedPlugin {
 
         private void tick(object sender, ElapsedEventArgs e) {
             for (int i = 0; i < vehiclesToBeDestroyed.Count; ++i) {
-                KeyValuePair<uint, VehicleInfo> pair = vehiclesToBeDestroyed.ElementAt(i);
-                if (!pair.Value.vehicle.isDead && (DateTime.Now - pair.Value.lastActivity).Minutes >= 0) {
+                KeyValuePair<uint, DestroyingVehicleInfo> pair = vehiclesToBeDestroyed.ElementAt(i);
+                if (!pair.Value.vehicle.isDead && (DateTime.Now - pair.Value.lastActivity).Minutes >= 10) {
                     // fun stuff here!
                     InteractableVehicle vehicle = pair.Value.vehicle;
-                    if (pair.Value.timesHonked >= 5) {
+                    if (pair.Value.timesHonked >= 50) {
                         pair.Value.vehicle.askDamage(ushort.MaxValue, false);
                     } else if (!pair.Value.lastHonked) {
-                        VehicleManager.sendVehicleHorn(vehicle);
                         VehicleManager.sendVehicleHeadlights(vehicle);
+                        EffectManager.sendEffect(vehicleDestroySounds[r.Next(vehicleDestroySounds.Count - 1)], 200, vehicle.transform.position);
                         pair.Value.lastHonked = true;
                         ++pair.Value.timesHonked;
                     } else {
@@ -70,10 +73,14 @@ namespace AlskeboUnturnedPlugin {
             }
 
             if (!playerOwnedVehicles.ContainsKey(player.CSteamID))
-                playerOwnedVehicles.Add(player.CSteamID, new List<uint>());
+                playerOwnedVehicles.Add(player.CSteamID, new List<VehicleInfo>());
 
-            List<uint> list = playerOwnedVehicles[player.CSteamID];
-            list.Add(vehicle.instanceID);
+            List<VehicleInfo> list = playerOwnedVehicles[player.CSteamID];
+            VehicleInfo info = new VehicleInfo();
+            info.instanceId = vehicle.instanceID;
+            info.ownerId = player.CSteamID;
+            info.ownerName = player.DisplayName;
+            list.Add(info);
             playerOwnedVehicles[player.CSteamID] = list;
             vehicleOwners.Add(vehicle.instanceID, player.CSteamID);
             // TODO: store in database
@@ -84,6 +91,24 @@ namespace AlskeboUnturnedPlugin {
             if (vehicleOwners.ContainsKey(vehicle.instanceID))
                 return vehicleOwners[vehicle.instanceID];
             return CSteamID.Nil;
+        }
+
+        public List<VehicleInfo> getOwnedVehicles(CSteamID id) {
+            if (playerOwnedVehicles.ContainsKey(id))
+                return playerOwnedVehicles[id];
+            return new List<VehicleInfo>();
+        }
+
+        public VehicleInfo getOwnedVehicleInfoByInstanceId(CSteamID id, uint instanceId) {
+            if (playerOwnedVehicles.ContainsKey(id)) {
+                List<VehicleInfo> vehicleInfos = playerOwnedVehicles[id];
+                foreach (VehicleInfo info in vehicleInfos) {
+                    if (info.instanceId == instanceId) {
+                        return info;
+                    }
+                }
+            }
+            return null;
         }
 
         public String getVehicleTypeName(ushort id) {

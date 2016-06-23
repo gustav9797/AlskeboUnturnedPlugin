@@ -55,9 +55,8 @@ namespace AlskeboUnturnedPlugin {
                     CSteamID who = vehicleManager.getVehicleOwner(player.CurrentVehicle);
                     String vehicleName = vehicleManager.getVehicleTypeName(player.CurrentVehicle.id);
                     if (who != CSteamID.Nil) {
-                        String whoNickname = (SteamAPI.Init() ? SteamFriends.GetPlayerNickname(who) : "Unknown player");
-                        if (whoNickname == null)
-                            whoNickname = "Unknown player";
+                        VehicleInfo info = vehicleManager.getOwnedVehicleInfoByInstanceId(who, player.CurrentVehicle.instanceID);
+                        String whoNickname = (info != null ? info.ownerName : "Unknown player");
 
                         if (player.CSteamID.Equals(who))
                             UnturnedChat.Say(player, "Welcome back to your " + vehicleName + ", " + player.DisplayName + "!");

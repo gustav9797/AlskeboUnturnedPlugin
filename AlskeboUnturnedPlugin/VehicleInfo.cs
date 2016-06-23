@@ -1,4 +1,4 @@
-﻿using SDG.Unturned;
+﻿using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,12 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace AlskeboUnturnedPlugin {
-    class VehicleInfo {
-        public InteractableVehicle vehicle;
-        public DateTime lastActivity;
-
-        public bool isBeingDestroyed = false;
-        public bool lastHonked = false;
-        public int timesHonked = 0;
+    public class VehicleInfo {
+        public uint instanceId;
+        public CSteamID ownerId;
+        public String ownerName;
     }
 }
