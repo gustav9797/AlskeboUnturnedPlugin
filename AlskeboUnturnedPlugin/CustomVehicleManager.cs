@@ -8,35 +8,28 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace AlskeboUnturnedPlugin
-{
-    public class CustomVehicleManager
-    {
+namespace AlskeboUnturnedPlugin {
+    public class CustomVehicleManager {
         public static byte customSAVEDATA_VERSION { get { return VehicleManager.SAVEDATA_VERSION; } }
         public static VehicleManager customInstance { get { return VehicleManager.Instance; } }
         public static List<InteractableVehicle> customVehicles { get { return VehicleManager.vehicles; } }
 
-        private static uint custominstanceCount
-        {
-            get
-            {
+        private static uint custominstanceCount {
+            get {
                 Type type = typeof(VehicleManager);
                 FieldInfo info = type.GetField("instanceCount", BindingFlags.NonPublic | BindingFlags.Static);
                 uint value = (uint)info.GetValue(null);
                 return value;
             }
-            set
-            {
+            set {
                 Type type = typeof(VehicleManager);
                 FieldInfo info = type.GetField("instanceCount", BindingFlags.NonPublic | BindingFlags.Static);
                 info.SetValue(null, value);
             }
         }
 
-        private static ushort customrespawnVehicleIndex
-        {
-            get
-            {
+        private static ushort customrespawnVehicleIndex {
+            get {
                 Type type = typeof(VehicleManager);
                 FieldInfo info = type.GetField("respawnVehicleIndex", BindingFlags.NonPublic | BindingFlags.Static);
                 ushort value = (ushort)info.GetValue(null);
@@ -44,10 +37,8 @@ namespace AlskeboUnturnedPlugin
             }
         }
 
-        private static float customlastTick
-        {
-            get
-            {
+        private static float customlastTick {
+            get {
                 Type type = typeof(VehicleManager);
                 FieldInfo info = type.GetField("lastTick", BindingFlags.NonPublic | BindingFlags.Static);
                 float value = (float)info.GetValue(null);
@@ -55,10 +46,8 @@ namespace AlskeboUnturnedPlugin
             }
         }
 
-        private uint customseq
-        {
-            get
-            {
+        private uint customseq {
+            get {
                 Type type = typeof(VehicleManager);
                 FieldInfo info = type.GetField("seq", BindingFlags.NonPublic | BindingFlags.Static);
                 uint value = (uint)info.GetValue(null);
@@ -66,8 +55,7 @@ namespace AlskeboUnturnedPlugin
             }
         }
 
-        public static InteractableVehicle customSpawnVehicle(ushort id, Vector3 point, Quaternion angle)
-        {
+        public static InteractableVehicle customSpawnVehicle(ushort id, Vector3 point, Quaternion angle) {
             VehicleAsset vehicleAsset = (VehicleAsset)Assets.find(EAssetType.VEHICLE, id);
             if (vehicleAsset == null)
                 return null;
@@ -80,11 +68,9 @@ namespace AlskeboUnturnedPlugin
             return vehicle;
         }
 
-        private static InteractableVehicle customAddVehicle(ushort id, Vector3 point, Quaternion angle, bool sirens, bool headlights, bool taillights, ushort fuel, bool isExploded, ushort health, CSteamID[] passengers, uint instanceID)
-        {
+        private static InteractableVehicle customAddVehicle(ushort id, Vector3 point, Quaternion angle, bool sirens, bool headlights, bool taillights, ushort fuel, bool isExploded, ushort health, CSteamID[] passengers, uint instanceID) {
             VehicleAsset vehicleAsset = (VehicleAsset)Assets.find(EAssetType.VEHICLE, id);
-            if (vehicleAsset != null)
-            {
+            if (vehicleAsset != null) {
                 Transform parent = !Dedicator.isDedicated || !((UnityEngine.Object)vehicleAsset.clip != (UnityEngine.Object)null) ? UnityEngine.Object.Instantiate<GameObject>(vehicleAsset.vehicle).transform : UnityEngine.Object.Instantiate<GameObject>(vehicleAsset.clip).transform;
                 parent.name = id.ToString();
                 parent.parent = LevelVehicles.models;
@@ -102,10 +88,8 @@ namespace AlskeboUnturnedPlugin
                 interactableVehicle.tellSirens(sirens);
                 interactableVehicle.tellHeadlights(headlights);
                 interactableVehicle.tellTaillights(taillights);
-                if (passengers != null)
-                {
-                    for (byte seat = (byte)0; (int)seat < passengers.Length; ++seat)
-                    {
+                if (passengers != null) {
+                    for (byte seat = (byte)0; (int)seat < passengers.Length; ++seat) {
                         if (passengers[(int)seat] != CSteamID.Nil)
                             interactableVehicle.addPlayer(seat, passengers[(int)seat]);
                     }
@@ -113,9 +97,7 @@ namespace AlskeboUnturnedPlugin
                 VehicleManager.vehicles.Add(interactableVehicle);
                 BarricadeManager.waterPlant(parent);
                 return interactableVehicle;
-            }
-            else
-            {
+            } else {
                 if (Provider.isServer)
                     return null;
                 Provider.connectionFailureInfo = ESteamConnectionFailureInfo.VEHICLE;
