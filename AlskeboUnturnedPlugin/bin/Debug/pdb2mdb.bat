@@ -1,0 +1,2 @@
+pdb2mdb AlskeboUnturnedPlugin.dll
+pause
