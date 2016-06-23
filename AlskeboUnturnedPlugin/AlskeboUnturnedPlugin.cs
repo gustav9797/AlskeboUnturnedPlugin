@@ -15,13 +15,15 @@ namespace AlskeboUnturnedPlugin {
     public class AlskeboUnturnedPlugin : RocketPlugin {
         class PlayerData {
             public bool isDriving = false;
+            public InteractableVehicle vehicle = null;
         }
 
         Dictionary<string, PlayerData> playerDataMap = new Dictionary<string, PlayerData>();
-        public static AlskeboVehicleManager vehicleManager = new AlskeboVehicleManager();
+        public static AlskeboVehicleManager vehicleManager;
 
         public override void LoadPlugin() {
             base.LoadPlugin();
+            vehicleManager = new AlskeboVehicleManager();
             U.Events.OnPlayerConnected += onPlayerConnected;
             U.Events.OnPlayerDisconnected += onPlayerDisconnected;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStance += onPlayerUpdateStance;
@@ -46,13 +48,14 @@ namespace AlskeboUnturnedPlugin {
                 // Player entered vehicle
 
                 playerData.isDriving = true;
+                playerData.vehicle = player.CurrentVehicle;
                 playerDataMap[player.Id] = playerData;
 
                 if (player.CurrentVehicle != null) {
                     CSteamID who = vehicleManager.getVehicleOwner(player.CurrentVehicle);
                     String vehicleName = vehicleManager.getVehicleTypeName(player.CurrentVehicle.id);
                     if (who != CSteamID.Nil) {
-                        String whoNickname = SteamFriends.GetPlayerNickname(who);
+                        String whoNickname = (SteamAPI.Init() ? SteamFriends.GetPlayerNickname(who) : "Unknown player");
                         if (whoNickname == null)
                             whoNickname = "Unknown player";
 
@@ -62,12 +65,16 @@ namespace AlskeboUnturnedPlugin {
                             UnturnedChat.Say(player, "This " + vehicleName + " belongs to " + whoNickname + ".");
                     } else
                         UnturnedChat.Say(player, "This natural " + vehicleName + " will despawn when its fuel level is low.");
+
+                    vehicleManager.onPlayerEnterVehicle(player, player.CurrentVehicle);
                 }
             } else if (stance != 6 && playerData.isDriving) {
                 // Player exited vehicle
 
                 playerData.isDriving = false;
                 playerDataMap[player.Id] = playerData;
+
+                vehicleManager.onPlayerExitVehicle(player, playerData.vehicle);
             }
         }
 
