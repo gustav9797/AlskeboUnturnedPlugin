@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace AlskeboUnturnedPlugin {
-    class VehicleCommand {
+    class GiveVehicleCommand {
         public class CommandHello : IRocketCommand {
             public AllowedCaller AllowedCaller {
                 get { return AllowedCaller.Both; }
