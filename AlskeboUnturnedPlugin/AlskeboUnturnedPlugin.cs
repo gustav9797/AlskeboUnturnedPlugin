@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace AlskeboUnturnedPlugin {
     public class AlskeboUnturnedPlugin : RocketPlugin {
@@ -20,22 +21,100 @@ namespace AlskeboUnturnedPlugin {
 
         Dictionary<string, PlayerData> playerDataMap = new Dictionary<string, PlayerData>();
         public static AlskeboVehicleManager vehicleManager;
+        public static AlskeboPlayerManager playerManager;
 
         public override void LoadPlugin() {
             base.LoadPlugin();
             vehicleManager = new AlskeboVehicleManager();
+            playerManager = new AlskeboPlayerManager();
             U.Events.OnPlayerConnected += onPlayerConnected;
             U.Events.OnPlayerDisconnected += onPlayerDisconnected;
+            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateGesture += onPlayerUpdateGesture;
+            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdatePosition += onPlayerUpdatePosition;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStance += onPlayerUpdateStance;
             Logger.LogWarning("\tAlskeboPlugin Loaded Sucessfully");
         }
 
         private void onPlayerConnected(UnturnedPlayer player) {
             UnturnedChat.Say(player.DisplayName + " has connected.");
+            playerManager.onPlayerConnected(player);
         }
 
         private void onPlayerDisconnected(UnturnedPlayer player) {
             UnturnedChat.Say(player.DisplayName + " has disconnected.");
+            playerManager.onPlayerDisconnected(player);
+        }
+
+        private void onPlayerUpdateGesture(UnturnedPlayer player, Rocket.Unturned.Events.UnturnedPlayerEvents.PlayerGesture gesture) {
+            if (gesture == Rocket.Unturned.Events.UnturnedPlayerEvents.PlayerGesture.PunchLeft || gesture == Rocket.Unturned.Events.UnturnedPlayerEvents.PlayerGesture.PunchRight) {
+                if (playerManager.getPlayerData(player, "structureinfo")) {
+                    List<RegionCoordinate> regions = new List<RegionCoordinate>();
+                    Regions.getRegionsInRadius(player.Position, 20, regions);
+                    List<Transform> structures = new List<Transform>();
+                    StructureManager.getStructuresInRadius(player.Position, 10, regions, structures);
+
+                    float lowestDistance = float.MaxValue;
+                    Transform lowestDistanceTransform = null;
+                    foreach (Transform transform in structures) {
+                        float dis = Vector3.Distance(transform.position, player.Position);
+                        if (dis < lowestDistance) {
+                            lowestDistance = dis;
+                            lowestDistanceTransform = transform;
+                        }
+                    }
+
+                    if (lowestDistanceTransform != null) {
+                        byte x;
+                        byte y;
+                        ushort index;
+                        StructureRegion region;
+                        if (StructureManager.tryGetInfo(lowestDistanceTransform, out x, out y, out index, out region)) {
+                            Structure structure = region.structures[(int)index].structure;
+                            ItemStructureAsset itemStructureAsset = (ItemStructureAsset)Assets.find(EAssetType.ITEM, structure.id);
+                            UnturnedChat.Say(player, "-");
+                            UnturnedChat.Say(player, "Structure status of " + itemStructureAsset.itemName + ":");
+                            UnturnedChat.Say(player, "Health: " + structure.health);
+                            UnturnedChat.Say(player, "Is dead: " + structure.isDead);
+                        }
+                    } else
+                        UnturnedChat.Say(player, "Could not find any close structures.");
+                } else if (playerManager.getPlayerData(player, "barricadeinfo")) {
+                    List<RegionCoordinate> regions = new List<RegionCoordinate>();
+                    Regions.getRegionsInRadius(player.Position, 20, regions);
+                    List<Transform> barricades = new List<Transform>();
+                    BarricadeManager.getBarricadesInRadius(player.Position, 10, regions, barricades);
+
+                    float lowestDistance = float.MaxValue;
+                    Transform lowestDistanceTransform = null;
+                    foreach (Transform transform in barricades) {
+                        float dis = Vector3.Distance(transform.position, player.Position);
+                        if (dis < lowestDistance) {
+                            lowestDistance = dis;
+                            lowestDistanceTransform = transform;
+                        }
+                    }
+
+                    if (lowestDistanceTransform != null) {
+                        byte x;
+                        byte y;
+                        ushort plant;
+                        ushort index;
+                        BarricadeRegion region;
+                        if (BarricadeManager.tryGetInfo(lowestDistanceTransform, out x, out y, out plant, out index, out region)) {
+                            Barricade barricade = region.barricades[(int)index].barricade;
+                            ItemBarricadeAsset itemBarricadeAsset = (ItemBarricadeAsset)Assets.find(EAssetType.ITEM, barricade.id);
+                            UnturnedChat.Say(player, "-");
+                            UnturnedChat.Say(player, "Barricade status of " + itemBarricadeAsset.itemName + ":");
+                            UnturnedChat.Say(player, "Health: " + barricade.health);
+                            UnturnedChat.Say(player, "Plant: " + plant);
+                        }
+                    } else
+                        UnturnedChat.Say(player, "Could not find any close barricades.");
+                }
+            }
+        }
+
+        private void onPlayerUpdatePosition(UnturnedPlayer player, UnityEngine.Vector3 position) {
         }
 
         private void onPlayerUpdateStance(UnturnedPlayer player, byte stance) {
