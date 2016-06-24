@@ -14,3 +14,6 @@ C:\git\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\obj\Debug\AlskeboUnturnedPlug
 C:\git\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\obj\Debug\AlskeboUnturnedPlugin.dll
 C:\git\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\obj\Debug\AlskeboUnturnedPlugin.pdb
 C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\obj\Debug\AlskeboUnturnedPlugin.csprojResolveAssemblyReference.cache
+C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Debug\Libraries\MongoDB.Bson.dll
+C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Debug\Libraries\MongoDB.Driver.Core.dll
+C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Debug\Libraries\MongoDB.Driver.dll

@@ -11,6 +11,7 @@
     <AssemblyName>AlskeboUnturnedPlugin</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -36,6 +37,21 @@
     <Reference Include="Assembly-CSharp-firstpass">
       <HintPath>..\lib\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
+    <Reference Include="MongoDB.Bson, Version=2.2.4.26, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\MongoDB.Bson.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MongoDB.Driver, Version=2.2.4.26, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\MongoDB.Driver.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MongoDB.Driver.Core, Version=2.2.4.26, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\MongoDB.Driver.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Rocket.API">
       <HintPath>..\lib\Rocket.API.dll</HintPath>
     </Reference>
@@ -58,16 +74,30 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Advertiser.cs" />
     <Compile Include="AlskeboPlayerManager.cs" />
     <Compile Include="AlskeboUnturnedPlugin.cs" />
     <Compile Include="CustomVehicleManager.cs" />
+    <Compile Include="DatabaseManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BarricadeInfoCommand.cs" />
+    <Compile Include="FirstVehicleCommand.cs" />
     <Compile Include="StructureInfoCommand.cs" />
-    <Compile Include="VehicleCommand.cs" />
+    <Compile Include="GiveVehicleCommand.cs" />
     <Compile Include="AlskeboVehicleManager.cs" />
     <Compile Include="DestroyingVehicleInfo.cs" />
     <Compile Include="VehicleInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Libraries\MongoDB.Bson.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Libraries\MongoDB.Driver.Core.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Libraries\MongoDB.Driver.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

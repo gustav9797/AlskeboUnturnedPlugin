@@ -11,6 +11,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using Rocket.API;
+using MongoDB.Bson;
+using MongoDB.Driver;
 
 namespace AlskeboUnturnedPlugin {
     public class AlskeboUnturnedPlugin : RocketPlugin {
@@ -19,30 +22,60 @@ namespace AlskeboUnturnedPlugin {
             public InteractableVehicle vehicle = null;
         }
 
-        Dictionary<string, PlayerData> playerDataMap = new Dictionary<string, PlayerData>();
+        private Dictionary<string, PlayerData> playerDataMap = new Dictionary<string, PlayerData>();
+        private bool wasUnloaded = false;
+        public static DatabaseManager databaseManager;
         public static AlskeboVehicleManager vehicleManager;
         public static AlskeboPlayerManager playerManager;
+        public static Advertiser advertiser;
+        public static System.Random r = new System.Random();
 
         public override void LoadPlugin() {
             base.LoadPlugin();
+            databaseManager = new DatabaseManager();
             vehicleManager = new AlskeboVehicleManager();
             playerManager = new AlskeboPlayerManager();
+            advertiser = new Advertiser();
             U.Events.OnPlayerConnected += onPlayerConnected;
             U.Events.OnPlayerDisconnected += onPlayerDisconnected;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateGesture += onPlayerUpdateGesture;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdatePosition += onPlayerUpdatePosition;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStance += onPlayerUpdateStance;
+            if (wasUnloaded) {
+                Logger.LogWarning("\tRe-sending onPlayerConnected calls");
+                foreach (SteamPlayer player in Provider.clients) {
+                    onPlayerConnected(UnturnedPlayer.FromSteamPlayer(player));
+                }
+            }
+            wasUnloaded = false;
             Logger.LogWarning("\tAlskeboPlugin Loaded Sucessfully");
         }
 
+        public override void UnloadPlugin(PluginState state = PluginState.Unloaded) {
+            base.UnloadPlugin(state);
+            U.Events.OnPlayerConnected -= onPlayerConnected;
+            U.Events.OnPlayerDisconnected -= onPlayerDisconnected;
+            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateGesture -= onPlayerUpdateGesture;
+            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdatePosition -= onPlayerUpdatePosition;
+            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStance -= onPlayerUpdateStance;
+            wasUnloaded = true;
+            Logger.LogWarning("\tAlskeboPlugin Unloaded");
+        }
+
         private void onPlayerConnected(UnturnedPlayer player) {
-            UnturnedChat.Say(player.DisplayName + " has connected.");
+            var filter = Builders<BsonDocument>.Filter.Eq("steamid", player.CSteamID.m_SteamID);
+            var cursor = databaseManager.getPlayersCollection().FindSync(filter);
+            if (!cursor.MoveNext()) {
+                BsonDocument document = new BsonDocument { { "steamid", player.CSteamID.m_SteamID }, { "displayname", player.DisplayName }, { "receivedvehicle", false } };
+                databaseManager.getPlayersCollection().InsertOne(document);
+            }
             playerManager.onPlayerConnected(player);
+            UnturnedChat.Say(player.DisplayName + " has connected.");
         }
 
         private void onPlayerDisconnected(UnturnedPlayer player) {
-            UnturnedChat.Say(player.DisplayName + " has disconnected.");
             playerManager.onPlayerDisconnected(player);
+            UnturnedChat.Say(player.DisplayName + " has disconnected.");
         }
 
         private void onPlayerUpdateGesture(UnturnedPlayer player, Rocket.Unturned.Events.UnturnedPlayerEvents.PlayerGesture gesture) {
