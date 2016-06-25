@@ -15,7 +15,7 @@ namespace AlskeboUnturnedPlugin {
 
         public Advertiser() {
             timer = new Timer();
-            timer.Interval = 1000 * 60 * 5; // Every 5 minutes
+            timer.Interval = 1000 * 60 * 2; // Every x minutes
             timer.Elapsed += Timer_Elapsed;
 
             messages.Add("Natural cars will respawn after some time being idle with low fuel level. You will notice it.");
@@ -41,7 +41,7 @@ namespace AlskeboUnturnedPlugin {
                 displayMessage();
                 return;
             }
-            UnturnedChat.Say(message, UnityEngine.Color.cyan);
+            UnturnedChat.Say(message, UnityEngine.Color.yellow);
         }
     }
 }
