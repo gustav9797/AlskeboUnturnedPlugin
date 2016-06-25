@@ -1,6 +1,4 @@
-﻿using MongoDB.Bson;
-using MongoDB.Driver;
-using Rocket.API;
+﻿using Rocket.API;
 using Rocket.Unturned.Chat;
 using Rocket.Unturned.Player;
 using System;
@@ -34,20 +32,14 @@ namespace AlskeboUnturnedPlugin {
         public void Execute(IRocketPlayer caller, string[] command) {
             if (caller is UnturnedPlayer) {
                 UnturnedPlayer player = (UnturnedPlayer)caller;
-                var collection = AlskeboUnturnedPlugin.databaseManager.getPlayersCollection();
-                var filter = Builders<BsonDocument>.Filter.Eq("steamid", player.CSteamID.m_SteamID);
-                var cursor = collection.FindSync(filter);
-                if (cursor.MoveNext()) {
-                    BsonDocument current = cursor.Current.First();
-                    if (!current.GetValue("receivedvehicle").AsBoolean) {
-                        AlskeboUnturnedPlugin.vehicleManager.givePlayerOwnedCar(player, (ushort)AlskeboUnturnedPlugin.r.Next(25, 33));
-                        current.Set("receivedvehicle", true);
-                        collection.UpdateOne(filter, current);
-                    } else {
-                        UnturnedChat.Say("You have already received your noob-car once.");
-                    }
-                } else
-                    UnturnedChat.Say("There was a database problem. Please rejoin the server.");
+
+                if (!AlskeboUnturnedPlugin.databaseManager.playerHasReceivedVehicle(player.CSteamID)) {
+                    AlskeboUnturnedPlugin.vehicleManager.givePlayerOwnedCar(player, (ushort)AlskeboUnturnedPlugin.r.Next(69, 75));
+                    AlskeboUnturnedPlugin.databaseManager.setPlayerReceivedVehicle(player.CSteamID, true);
+                    UnturnedChat.Say(caller, "Enjoy your noob-car!");
+                } else {
+                    UnturnedChat.Say(caller, "You have already received your noob-car.");
+                }
             } else {
                 UnturnedChat.Say(caller, "You must be in-game to execute this command.");
             }

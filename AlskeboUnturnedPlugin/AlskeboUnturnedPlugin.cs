@@ -12,8 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using Rocket.API;
-using MongoDB.Bson;
-using MongoDB.Driver;
+using System.Threading;
 
 namespace AlskeboUnturnedPlugin {
     public class AlskeboUnturnedPlugin : RocketPlugin {
@@ -63,12 +62,10 @@ namespace AlskeboUnturnedPlugin {
         }
 
         private void onPlayerConnected(UnturnedPlayer player) {
-            var filter = Builders<BsonDocument>.Filter.Eq("steamid", player.CSteamID.m_SteamID);
-            var cursor = databaseManager.getPlayersCollection().FindSync(filter);
-            if (!cursor.MoveNext()) {
-                BsonDocument document = new BsonDocument { { "steamid", player.CSteamID.m_SteamID }, { "displayname", player.DisplayName }, { "receivedvehicle", false } };
-                databaseManager.getPlayersCollection().InsertOne(document);
-            }
+            new Thread(delegate () {
+                if (!databaseManager.playerExists(player.CSteamID))
+                    databaseManager.insertPlayer(player.CSteamID, player.DisplayName, false);
+            }).Start();
             playerManager.onPlayerConnected(player);
             UnturnedChat.Say(player.DisplayName + " has connected.");
         }
