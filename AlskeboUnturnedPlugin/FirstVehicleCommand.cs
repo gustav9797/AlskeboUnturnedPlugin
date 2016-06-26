@@ -34,7 +34,7 @@ namespace AlskeboUnturnedPlugin {
                 UnturnedPlayer player = (UnturnedPlayer)caller;
 
                 if (!AlskeboUnturnedPlugin.databaseManager.playerHasReceivedVehicle(player.CSteamID)) {
-                    AlskeboUnturnedPlugin.vehicleManager.givePlayerOwnedCar(player, (ushort)AlskeboUnturnedPlugin.r.Next(69, 75));
+                    AlskeboUnturnedPlugin.vehicleManager.givePlayerOwnedVehicle(player, (ushort)AlskeboUnturnedPlugin.r.Next(69, 75));
                     AlskeboUnturnedPlugin.databaseManager.setPlayerReceivedVehicle(player.CSteamID, true);
                     UnturnedChat.Say(caller, "Enjoy your noob-car!");
                 } else {

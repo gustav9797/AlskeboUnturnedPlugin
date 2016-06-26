@@ -1,4 +1,5 @@
-﻿using SDG.Unturned;
+﻿using Rocket.Core.Logging;
+using SDG.Unturned;
 using Steamworks;
 using System;
 using System.Collections.Generic;
@@ -98,6 +99,7 @@ namespace AlskeboUnturnedPlugin {
                 BarricadeManager.waterPlant(parent);
                 return interactableVehicle;
             } else {
+                Logger.LogError("customAddVehicle: Could not find asset with id " + id);
                 if (Provider.isServer)
                     return null;
                 Provider.connectionFailureInfo = ESteamConnectionFailureInfo.VEHICLE;

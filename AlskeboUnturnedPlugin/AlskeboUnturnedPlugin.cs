@@ -40,6 +40,9 @@ namespace AlskeboUnturnedPlugin {
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateGesture += onPlayerUpdateGesture;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdatePosition += onPlayerUpdatePosition;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStance += onPlayerUpdateStance;
+
+            vehicleManager.onPluginLoaded();
+
             if (wasUnloaded) {
                 Logger.LogWarning("\tRe-sending onPlayerConnected calls");
                 foreach (SteamPlayer player in Provider.clients) {
@@ -57,6 +60,9 @@ namespace AlskeboUnturnedPlugin {
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateGesture -= onPlayerUpdateGesture;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdatePosition -= onPlayerUpdatePosition;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStance -= onPlayerUpdateStance;
+
+            vehicleManager.onPluginUnloaded();
+
             wasUnloaded = true;
             Logger.LogWarning("\tAlskeboPlugin Unloaded");
         }
@@ -67,11 +73,13 @@ namespace AlskeboUnturnedPlugin {
                     databaseManager.insertPlayer(player.CSteamID, player.DisplayName, false);
             }).Start();
             playerManager.onPlayerConnected(player);
+            vehicleManager.onPlayerConnected(player);
             UnturnedChat.Say(player.DisplayName + " has connected.");
         }
 
         private void onPlayerDisconnected(UnturnedPlayer player) {
             playerManager.onPlayerDisconnected(player);
+            vehicleManager.onPlayerDisconnected(player);
             UnturnedChat.Say(player.DisplayName + " has disconnected.");
         }
 
