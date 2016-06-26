@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace AlskeboUnturnedPlugin {
     class GiveVehicleCommand {
@@ -53,23 +52,31 @@ namespace AlskeboUnturnedPlugin {
 
                 String vehicleName = stringId;
                 ushort id = 0;
+                bool found = false;
                 if (!ushort.TryParse(stringId, out id)) {
-
-                    bool found = false;
                     Asset[] assets = SDG.Unturned.Assets.find(EAssetType.VEHICLE);
                     foreach (VehicleAsset ia in assets) {
                         if (ia != null && ia.Name != null && ia.Name.ToLower().Contains(stringId.ToLower())) {
-                            vehicleName = ia.name;
+                            vehicleName = ia.Name;
                             id = ia.Id;
                             found = true;
                             break;
                         }
                     }
-
-                    if (!found) {
-                        UnturnedChat.Say(caller, "Could not find the specified vehicle.");
-                        return;
+                } else {
+                    Asset[] assets = SDG.Unturned.Assets.find(EAssetType.VEHICLE);
+                    foreach (VehicleAsset ia in assets) {
+                        if (ia != null && ia.id == id) {
+                            vehicleName = ia.Name;
+                            id = ia.Id;
+                            found = true;
+                            break;
+                        }
                     }
+                }
+                if (!found) {
+                    UnturnedChat.Say(caller, "Could not find the specified vehicle.");
+                    return;
                 }
 
                 InteractableVehicle vehicle = AlskeboUnturnedPlugin.vehicleManager.givePlayerOwnedVehicle(who, id);
@@ -78,9 +85,9 @@ namespace AlskeboUnturnedPlugin {
                         UnturnedChat.Say(caller, "Could not give target an owned vehicle.");
                 } else {
                     //VehicleManager.Instance.askEnterVehicle(who.CSteamID, vehicle.instanceID, vehicle.asset.hash, (byte)vehicle.asset.engine);
-                    UnturnedChat.Say(who, "You were given a " + vehicleName.ToLower() + ".");
+                    UnturnedChat.Say(who, "You were given a " + vehicleName + " (" + id +  ").");
                     if (who.DisplayName != caller.DisplayName)
-                        UnturnedChat.Say(caller, who.DisplayName + " was given a " + vehicleName.ToLower() + ".");
+                        UnturnedChat.Say(caller, who.DisplayName + " was given a " + vehicleName + ".");
                 }
 
             }

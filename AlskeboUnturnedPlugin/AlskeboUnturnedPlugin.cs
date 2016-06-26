@@ -9,10 +9,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Rocket.API;
 using System.Threading;
+using Rocket.API.Extensions;
 
 namespace AlskeboUnturnedPlugin {
     public class AlskeboUnturnedPlugin : RocketPlugin {
@@ -31,6 +31,7 @@ namespace AlskeboUnturnedPlugin {
 
         public override void LoadPlugin() {
             base.LoadPlugin();
+
             databaseManager = new DatabaseManager();
             vehicleManager = new AlskeboVehicleManager();
             playerManager = new AlskeboPlayerManager();

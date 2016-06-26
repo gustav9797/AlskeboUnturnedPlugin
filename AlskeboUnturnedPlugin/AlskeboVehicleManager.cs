@@ -6,12 +6,12 @@ using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Timers;
 using UnityEngine;
 
@@ -26,17 +26,14 @@ namespace AlskeboUnturnedPlugin {
         List<ushort> vehicleDestroySounds = new List<ushort> { 19, 20, 35, 36, 37, 53, 61, 62, 63, 65, 69, 71, 72, 81, 89 };
         System.Random r = new System.Random();
 
-        public delegate void DoSomethingDelegate();
-        private DoSomethingDelegate test;
-
         public AlskeboVehicleManager() {
             System.Timers.Timer timer = new System.Timers.Timer(200);
             timer.Elapsed += tick;
             timer.Start();
 
             System.Timers.Timer saveTimer = new System.Timers.Timer(1000 * 60); //Every minute
-            timer.Elapsed += saveVehicles;
-            timer.Start();
+            saveTimer.Elapsed += saveVehicles;
+            saveTimer.Start();
 
             Provider.onServerShutdown += onServerShutdown;
             foreach (Delegate d in Provider.onServerShutdown.GetInvocationList()) {
@@ -45,59 +42,81 @@ namespace AlskeboUnturnedPlugin {
                     Provider.onServerShutdown += (Provider.ServerShutdown)d;
                 }
             }
+            Provider.onServerShutdown += onLateServerShutdown;
         }
 
         public void onPluginLoaded() {
-            Level.onLevelLoaded += new LevelLoaded(delegate (int level) {
-                Logger.Log("Receiving owned vehicles from database...");
-                List<DatabaseVehicle> vehicles = AlskeboUnturnedPlugin.databaseManager.receiveOwnedVehicles();
-                foreach (DatabaseVehicle dbv in vehicles) {
-                    /*Logger.Log("type " + dbv.type);
-                    Logger.Log("x " + dbv.x);
-                    Logger.Log("y " + dbv.y);
-                    Logger.Log("z " + dbv.z);
-                    Logger.Log("rx " + dbv.rx);
-                    Logger.Log("ry " + dbv.ry);
-                    Logger.Log("rz " + dbv.rz);
-                    Logger.Log("rw " + dbv.rw);
-                    Logger.Log("fuel " + dbv.fuel);
-                    Logger.Log("health " + dbv.health);*/
+            Level.onLevelLoaded += onLevelLoaded;
+        }
 
-                    InteractableVehicle vehicle = CustomVehicleManager.customSpawnVehicle(dbv.type, new Vector3(dbv.x, dbv.y, dbv.z), new Quaternion(dbv.rx, dbv.ry, dbv.rz, dbv.rw));
+        public void onLevelLoaded(int level) {
+            Level.onLevelLoaded -= onLevelLoaded;
 
-                    vehicle.tellFuel(dbv.fuel);
-                    VehicleManager.sendVehicleFuel(vehicle, dbv.fuel);
+            Logger.Log("Removing all loaded vehicles (" + VehicleManager.Vehicles.Count + ")...");
+            CustomVehicleManager.customseq = 0U;
+            VehicleManager.Vehicles = new List<InteractableVehicle>();
+            CustomVehicleManager.custominstanceCount = 0U;
+            CustomVehicleManager.customrespawnVehicleIndex = (ushort)0;
+            BarricadeManager.clearPlants();
 
-                    vehicle.tellHealth(dbv.health);
-                    VehicleManager.sendVehicleHealth(vehicle, dbv.health);
+            Logger.Log("Receiving owned vehicles from database...");
+            List<DatabaseVehicle> vehicles = AlskeboUnturnedPlugin.databaseManager.receiveOwnedVehicles();
+            foreach (DatabaseVehicle dbv in vehicles) {
+                /*Logger.Log("type " + dbv.type);
+                Logger.Log("x " + dbv.x);
+                Logger.Log("y " + dbv.y);
+                Logger.Log("z " + dbv.z);
+                Logger.Log("rx " + dbv.rx);
+                Logger.Log("ry " + dbv.ry);
+                Logger.Log("rz " + dbv.rz);
+                Logger.Log("rw " + dbv.rw);
+                Logger.Log("fuel " + dbv.fuel);
+                Logger.Log("health " + dbv.health);*/
 
-                    CSteamID ownerId = new CSteamID(dbv.steamId);
-                    if (!playerOwnedVehicles.ContainsKey(ownerId))
-                        playerOwnedVehicles.Add(ownerId, new List<VehicleInfo>());
+                InteractableVehicle vehicle = CustomVehicleManager.customSpawnVehicle(dbv.type, new Vector3(dbv.x, dbv.y, dbv.z), new Quaternion(dbv.rx, dbv.ry, dbv.rz, dbv.rw));
 
-                    List<VehicleInfo> list = playerOwnedVehicles[ownerId];
-                    VehicleInfo info = new VehicleInfo();
-                    info.instanceId = vehicle.instanceID;
-                    info.databaseId = dbv.id;
-                    info.ownerId = ownerId;
-                    info.ownerName = "TEMPORARY NAME";
-                    list.Add(info);
-                    playerOwnedVehicles[ownerId] = list;
-                    vehicleOwners.Add(vehicle.instanceID, info);
-                }
-                Logger.Log("Done.");
-            });
+                vehicle.tellFuel(dbv.fuel);
+                VehicleManager.sendVehicleFuel(vehicle, dbv.fuel);
+
+                vehicle.tellHealth(dbv.health);
+                VehicleManager.sendVehicleHealth(vehicle, dbv.health);
+
+                CSteamID ownerId = new CSteamID(dbv.steamId);
+                if (!playerOwnedVehicles.ContainsKey(ownerId))
+                    playerOwnedVehicles.Add(ownerId, new List<VehicleInfo>());
+
+                List<VehicleInfo> list = playerOwnedVehicles[ownerId];
+                VehicleInfo info = new VehicleInfo();
+                info.instanceId = vehicle.instanceID;
+                info.databaseId = dbv.id;
+                info.ownerId = ownerId;
+                info.ownerName = "TEMPORARY NAME";
+                list.Add(info);
+                playerOwnedVehicles[ownerId] = list;
+                vehicleOwners.Add(vehicle.instanceID, info);
+            }
+            Logger.Log("Done.");
         }
 
         public void onPluginUnloaded() {
         }
 
         public void onServerShutdown() {
-            Logger.Log("Removing owned vehicles to prevent duplicates on next server start...");
+            saveVehicles(null, null);
+            Logger.Log("Removing owned vehicles to prevent duplicates on next server start (" + vehicleOwners.Count + "/" + VehicleManager.Vehicles.Count + ")...");
             foreach (uint instanceId in vehicleOwners.Keys) {
                 // Removes vehicle completely and destroys stuff built on it
                 VehicleManager.Instance.tellVehicleDestroy(Provider.server, instanceId);
             }
+        }
+
+        public void onLateServerShutdown() {
+            String fileName = "Level/" + Level.info.name + "/Vehicles.dat";
+            if (File.Exists(fileName)) {
+                File.Delete(fileName);
+                Logger.Log("Deleted Vehicles.dat.");
+            } else
+                Logger.Log("Could not delete Vehicles.dat.");
         }
 
         public void onPlayerConnected(UnturnedPlayer player) {
@@ -116,7 +135,7 @@ namespace AlskeboUnturnedPlugin {
         public void onPlayerExitVehicle(UnturnedPlayer player, InteractableVehicle vehicle) {
             if (vehicle != null) {
                 VehicleInfo info = getOwnedVehicleInfo(vehicle.instanceID);
-                if (info == null || info.ownerId == CSteamID.Nil) {
+                if (info == null || info.ownerId == null || info.ownerId == CSteamID.Nil) {
                     if (vehicle.fuel <= 5 && !vehiclesToBeDestroyed.ContainsKey(vehicle.instanceID)) {
                         DestroyingVehicleInfo destroyingInfo = new DestroyingVehicleInfo();
                         destroyingInfo.vehicle = vehicle;
@@ -126,7 +145,10 @@ namespace AlskeboUnturnedPlugin {
                 } else if (!lastSave.ContainsKey(vehicle.instanceID) || !isSimilar(vehicle, lastSave[vehicle.instanceID])) {
                     DatabaseVehicle dbv = DatabaseVehicle.fromInteractableVehicle(info.databaseId, info.ownerId.m_SteamID, vehicle);
                     AlskeboUnturnedPlugin.databaseManager.updateVehicle(dbv);
-                    lastSave.Add(vehicle.instanceID, dbv);
+                    if (lastSave.ContainsKey(vehicle.instanceID))
+                        lastSave[vehicle.instanceID] = dbv;
+                    else
+                        lastSave.Add(vehicle.instanceID, dbv);
                 }
             }
         }
@@ -158,17 +180,25 @@ namespace AlskeboUnturnedPlugin {
         private void saveVehicles(object sender, ElapsedEventArgs e) {
             foreach (KeyValuePair<uint, VehicleInfo> pair in vehicleOwners) {
                 InteractableVehicle vehicle = VehicleManager.getVehicle(pair.Key);
-                DatabaseVehicle dbv = DatabaseVehicle.fromInteractableVehicle(pair.Value.databaseId, pair.Value.ownerId.m_SteamID, vehicle);
                 if (vehicle.isDead || vehicle.isDrowned) {
                     deleteOwnedVehicle(pair.Value.databaseId, pair.Key);
                 }
 
                 if (!lastSave.ContainsKey(pair.Key) || !isSimilar(vehicle, lastSave[pair.Key])) {
+                    DatabaseVehicle dbv = DatabaseVehicle.fromInteractableVehicle(pair.Value.databaseId, pair.Value.ownerId.m_SteamID, vehicle);
                     AlskeboUnturnedPlugin.databaseManager.updateVehicle(dbv);
-                    lastSave.Add(pair.Key, dbv);
+                    if (lastSave.ContainsKey(vehicle.instanceID))
+                        lastSave[vehicle.instanceID] = dbv;
+                    else
+                        lastSave.Add(vehicle.instanceID, dbv);
                 }
             }
-            Logger.Log("Vehicles were saved.");
+
+            /*foreach (InteractableVehicle vehicle in VehicleManager.Vehicles) {
+                if(!vehicleOwners.ContainsKey(vehicle.instanceID)) {
+                    // Vehicle was spawned with /v or unturned respawned it
+                }
+            }*/
         }
 
         private bool isSimilar(InteractableVehicle first, DatabaseVehicle second) {
@@ -247,7 +277,7 @@ namespace AlskeboUnturnedPlugin {
         public String getVehicleTypeName(ushort id) {
             Asset a = SDG.Unturned.Assets.find(EAssetType.VEHICLE, id);
             if (a != null)
-                return a.name;
+                return ((VehicleAsset)a).Name;
             return "Unknown vehicle";
         }
 

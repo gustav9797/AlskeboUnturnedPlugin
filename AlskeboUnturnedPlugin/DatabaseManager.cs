@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Rocket.Unturned.Chat;
 using MySql.Data.MySqlClient;
 using Rocket.Core.Logging;
@@ -75,7 +74,7 @@ namespace AlskeboUnturnedPlugin {
                 MySqlCommand command = connection.CreateCommand();
                 command.CommandText = "INSERT INTO players (steamid, displayname, receivedvehicle) VALUES ('" + id.m_SteamID + "','" + displayName + "','" + receivedVehicle.ToString() + "');";
                 connection.Open();
-                command.ExecuteNonQueryAsync();
+                command.ExecuteNonQuery();
                 connection.Close();
             } catch (Exception e) {
                 Logger.Log(e);
@@ -104,7 +103,7 @@ namespace AlskeboUnturnedPlugin {
                 MySqlCommand command = connection.CreateCommand();
                 command.CommandText = "UPDATE players SET receivedvehicle = '" + receivedVehicle.ToString() + "' WHERE steamid = '" + id.m_SteamID + "';";
                 connection.Open();
-                command.ExecuteNonQueryAsync();
+                command.ExecuteNonQuery();
                 connection.Close();
             } catch (Exception e) {
                 Logger.Log(e);
@@ -188,7 +187,7 @@ namespace AlskeboUnturnedPlugin {
                 command.Parameters.AddWithValue("@9", vehicle.health);
                 command.Parameters.AddWithValue("@10", vehicle.id);
                 connection.Open();
-                command.ExecuteNonQueryAsync();
+                command.ExecuteNonQuery();
                 connection.Close();
             } catch (Exception e) {
                 Logger.Log(e);
@@ -203,7 +202,7 @@ namespace AlskeboUnturnedPlugin {
                 command.CommandText = "DELETE FROM vehicles WHERE id = @1;";
                 command.Parameters.AddWithValue("@1", id);
                 connection.Open();
-                command.ExecuteNonQueryAsync();
+                command.ExecuteNonQuery();
                 connection.Close();
             } catch (Exception e) {
                 Logger.Log(e);
