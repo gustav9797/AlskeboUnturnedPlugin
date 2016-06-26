@@ -118,10 +118,10 @@ namespace AlskeboUnturnedPlugin {
                 VehicleInfo info = getOwnedVehicleInfo(vehicle.instanceID);
                 if (info == null || info.ownerId == CSteamID.Nil) {
                     if (vehicle.fuel <= 5 && !vehiclesToBeDestroyed.ContainsKey(vehicle.instanceID)) {
-                        DestroyingVehicleInfo info = new DestroyingVehicleInfo();
-                        info.vehicle = vehicle;
-                        info.lastActivity = DateTime.Now;
-                        vehiclesToBeDestroyed.Add(vehicle.instanceID, info);
+                        DestroyingVehicleInfo destroyingInfo = new DestroyingVehicleInfo();
+                        destroyingInfo.vehicle = vehicle;
+                        destroyingInfo.lastActivity = DateTime.Now;
+                        vehiclesToBeDestroyed.Add(vehicle.instanceID, destroyingInfo);
                     }
                 } else if (!lastSave.ContainsKey(vehicle.instanceID) || !isSimilar(vehicle, lastSave[vehicle.instanceID])) {
                     DatabaseVehicle dbv = DatabaseVehicle.fromInteractableVehicle(info.databaseId, info.ownerId.m_SteamID, vehicle);

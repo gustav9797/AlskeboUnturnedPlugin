@@ -172,7 +172,7 @@ namespace AlskeboUnturnedPlugin {
                     CSteamID who = vehicleManager.getVehicleOwner(player.CurrentVehicle);
                     String vehicleName = vehicleManager.getVehicleTypeName(player.CurrentVehicle.id);
                     if (who != CSteamID.Nil) {
-                        VehicleInfo info = vehicleManager.getOwnedVehicleInfoByInstanceId(who, player.CurrentVehicle.instanceID);
+                        VehicleInfo info = vehicleManager.getOwnedVehicleInfo(player.CurrentVehicle.instanceID);
                         String whoNickname = (info != null ? info.ownerName : "Unknown player");
 
                         if (player.CSteamID.Equals(who))
