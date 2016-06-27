@@ -7,7 +7,7 @@ using SDG.Unturned;
 using Steamworks;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+
 using System.Text;
 using UnityEngine;
 using Rocket.API;
@@ -73,6 +73,7 @@ namespace AlskeboUnturnedPlugin {
                 if (!databaseManager.playerExists(player.CSteamID))
                     databaseManager.insertPlayer(player.CSteamID, player.DisplayName, false);
             }).Start();
+
             playerManager.onPlayerConnected(player);
             vehicleManager.onPlayerConnected(player);
             UnturnedChat.Say(player.DisplayName + " has connected.");
@@ -163,31 +164,12 @@ namespace AlskeboUnturnedPlugin {
             PlayerData playerData = playerDataMap[player.Id];
 
             if (stance == 6 && !playerData.isDriving) {
-                // Player entered vehicle
-
                 playerData.isDriving = true;
                 playerData.vehicle = player.CurrentVehicle;
                 playerDataMap[player.Id] = playerData;
 
-                if (player.CurrentVehicle != null) {
-                    CSteamID who = vehicleManager.getVehicleOwner(player.CurrentVehicle);
-                    String vehicleName = vehicleManager.getVehicleTypeName(player.CurrentVehicle.id);
-                    if (who != CSteamID.Nil) {
-                        VehicleInfo info = vehicleManager.getOwnedVehicleInfo(player.CurrentVehicle.instanceID);
-                        String whoNickname = (info != null ? info.ownerName : "Unknown player");
-
-                        if (player.CSteamID.Equals(who))
-                            UnturnedChat.Say(player, "Welcome back to your " + vehicleName + ", " + player.DisplayName + "!");
-                        else
-                            UnturnedChat.Say(player, "This " + vehicleName + " belongs to " + whoNickname + ".");
-                    } else
-                        UnturnedChat.Say(player, "This natural " + vehicleName + " will despawn when its fuel level is low.");
-
-                    vehicleManager.onPlayerEnterVehicle(player, player.CurrentVehicle);
-                }
+                vehicleManager.onPlayerEnterVehicle(player, player.CurrentVehicle);
             } else if (stance != 6 && playerData.isDriving) {
-                // Player exited vehicle
-
                 playerData.isDriving = false;
                 playerDataMap[player.Id] = playerData;
 
