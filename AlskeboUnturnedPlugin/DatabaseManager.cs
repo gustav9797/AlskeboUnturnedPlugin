@@ -192,7 +192,6 @@ namespace AlskeboUnturnedPlugin {
             } catch (Exception e) {
                 Logger.Log(e);
             }
-            Logger.Log("Vehicle with id " + vehicle.id + " was saved.");
         }
 
         public void deleteVehicle(long id) {

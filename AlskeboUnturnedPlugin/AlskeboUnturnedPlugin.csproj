@@ -78,6 +78,8 @@
     <Compile Include="AlskeboUnturnedPlugin.cs" />
     <Compile Include="CustomVehicleManager.cs" />
     <Compile Include="DatabaseManager.cs" />
+    <Compile Include="DebugCommand.cs" />
+    <Compile Include="EnterVehicleCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BarricadeInfoCommand.cs" />
     <Compile Include="FirstVehicleCommand.cs" />
