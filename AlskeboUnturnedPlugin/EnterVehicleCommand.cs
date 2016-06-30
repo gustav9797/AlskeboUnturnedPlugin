@@ -38,9 +38,10 @@ namespace AlskeboUnturnedPlugin {
                 uint id = 0;
                 if (command.Length >= 1 && uint.TryParse(command[0], out id)) {
                     InteractableVehicle vehicle = VehicleManager.getVehicle(id);
-                    if (vehicle != null)
+                    if (vehicle != null) {
+                        player.Teleport(vehicle.transform.position, 0);
                         VehicleManager.Instance.askEnterVehicle(player.CSteamID, id, vehicle.asset.hash, (byte)vehicle.asset.engine);
-                    else
+                    } else
                         UnturnedChat.Say(caller, "Vehicle null.");
                 } else {
                     UnturnedChat.Say(caller, U.Translate("command_generic_invalid_parameter"));

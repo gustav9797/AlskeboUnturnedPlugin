@@ -44,7 +44,7 @@ namespace AlskeboUnturnedPlugin {
         private MySqlConnection createConnection() {
             MySqlConnection connection = null;
             try {
-                connection = new MySqlConnection(String.Format("SERVER={0};DATABASE={1};UID={2};PASSWORD={3};PORT={4};", "107.6.175.251", "unturned", "unturned", "13421342", "3306"));
+                connection = new MySqlConnection(String.Format("SERVER={0};DATABASE={1};UID={2};PASSWORD={3};PORT={4};", "51.255.174.193", "unturned", "unturned", "13421342", "3306"));
             } catch (Exception ex) {
                 Logger.LogException(ex);
             }

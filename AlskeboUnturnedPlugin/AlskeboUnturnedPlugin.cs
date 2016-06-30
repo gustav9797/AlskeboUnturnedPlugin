@@ -17,7 +17,7 @@ using Rocket.API.Extensions;
 namespace AlskeboUnturnedPlugin {
     public class AlskeboUnturnedPlugin : RocketPlugin {
         class PlayerData {
-            public bool isDriving = false;
+            public bool isInsideVehicle = false;
             public InteractableVehicle vehicle = null;
         }
 
@@ -163,14 +163,14 @@ namespace AlskeboUnturnedPlugin {
 
             PlayerData playerData = playerDataMap[player.Id];
 
-            if (stance == 6 && !playerData.isDriving) {
-                playerData.isDriving = true;
+            if ((stance == 6 || stance == 7) && !playerData.isInsideVehicle) {
+                playerData.isInsideVehicle = true;
                 playerData.vehicle = player.CurrentVehicle;
                 playerDataMap[player.Id] = playerData;
 
                 vehicleManager.onPlayerEnterVehicle(player, player.CurrentVehicle);
-            } else if (stance != 6 && playerData.isDriving) {
-                playerData.isDriving = false;
+            } else if (stance != 6 && stance != 7 && playerData.isInsideVehicle) {
+                playerData.isInsideVehicle = false;
                 playerDataMap[player.Id] = playerData;
 
                 vehicleManager.onPlayerExitVehicle(player, playerData.vehicle);

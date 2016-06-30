@@ -85,6 +85,10 @@ namespace AlskeboUnturnedPlugin {
             bool removed = true;
             if (naturalCount >= defaultVehicleCount) {
                 Logger.Log("Removing all default vehicles (" + VehicleManager.Vehicles.Count + ")...");
+                foreach (InteractableVehicle v in VehicleManager.Vehicles) {
+                    if (v != null)
+                        v.tellExploded();
+                }
                 CustomVehicleManager.customseq = 0U;
                 VehicleManager.Vehicles = new List<InteractableVehicle>();
                 CustomVehicleManager.custominstanceCount = 0U;
@@ -170,7 +174,7 @@ namespace AlskeboUnturnedPlugin {
             if (vehicle != null) {
                 VehicleInfo info = getOwnedVehicleInfo(vehicle.instanceID);
                 if (info != null) {
-                    if (info.ownerId.m_SteamID == 0) {
+                    if (info.ownerId.m_SteamID == 0 && vehicle.isEmpty && vehicle.fuel <= 10) {
                         if (!vehiclesToBeDestroyed.ContainsKey(vehicle.instanceID)) {
                             DestroyingVehicleInfo destroyingInfo = new DestroyingVehicleInfo();
                             destroyingInfo.vehicle = vehicle;
@@ -194,7 +198,7 @@ namespace AlskeboUnturnedPlugin {
         private void destroyVehicles(object sender, ElapsedEventArgs e) {
             List<uint> toRemove = new List<uint>();
             foreach (KeyValuePair<uint, DestroyingVehicleInfo> pair in vehiclesToBeDestroyed) {
-                if (!pair.Value.vehicle.isDead && (DateTime.Now - pair.Value.lastActivity).Minutes >= 0) {
+                if (!pair.Value.vehicle.isDead && (DateTime.Now - pair.Value.lastActivity).Minutes >= 5) {
                     // fun stuff here!
                     InteractableVehicle vehicle = pair.Value.vehicle;
                     if (pair.Value.timesHonked >= 10) {
