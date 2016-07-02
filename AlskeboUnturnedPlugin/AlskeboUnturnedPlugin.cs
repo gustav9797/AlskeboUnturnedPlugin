@@ -41,6 +41,7 @@ namespace AlskeboUnturnedPlugin {
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateGesture += onPlayerUpdateGesture;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdatePosition += onPlayerUpdatePosition;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStance += onPlayerUpdateStance;
+            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStat += onPlayerUpdateStat;
 
             vehicleManager.onPluginLoaded();
 
@@ -61,6 +62,7 @@ namespace AlskeboUnturnedPlugin {
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateGesture -= onPlayerUpdateGesture;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdatePosition -= onPlayerUpdatePosition;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStance -= onPlayerUpdateStance;
+            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStat -= onPlayerUpdateStat;
 
             vehicleManager.onPluginUnloaded();
 
@@ -69,14 +71,17 @@ namespace AlskeboUnturnedPlugin {
         }
 
         private void onPlayerConnected(UnturnedPlayer player) {
+            UnturnedChat.Say(player.DisplayName + " has connected.");
             new Thread(delegate () {
                 if (!databaseManager.playerExists(player.CSteamID))
                     databaseManager.insertPlayer(player.CSteamID, player.DisplayName, false);
+                if (!AlskeboUnturnedPlugin.databaseManager.playerHasReceivedVehicle(player.CSteamID)) {
+                    UnturnedChat.Say(player, "Receive your one-time free personal car with \"/firstvehicle\"!");
+                }
             }).Start();
 
             playerManager.onPlayerConnected(player);
             vehicleManager.onPlayerConnected(player);
-            UnturnedChat.Say(player.DisplayName + " has connected.");
         }
 
         private void onPlayerDisconnected(UnturnedPlayer player) {
@@ -175,6 +180,11 @@ namespace AlskeboUnturnedPlugin {
 
                 vehicleManager.onPlayerExitVehicle(player, playerData.vehicle);
             }
+        }
+
+        private void onPlayerUpdateStat(UnturnedPlayer player, EPlayerStat stat) {
+            if (stat == EPlayerStat.KILLS_ZOMBIES_MEGA)
+                UnturnedChat.Say("A legend says " + player.DisplayName + " has killed a mega zombie...");
         }
 
     }

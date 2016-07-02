@@ -22,6 +22,8 @@ namespace AlskeboUnturnedPlugin {
         Dictionary<uint, VehicleInfo> vehicleOwners = new Dictionary<uint, VehicleInfo>();
         Dictionary<uint, DestroyingVehicleInfo> vehiclesToBeDestroyed = new Dictionary<uint, DestroyingVehicleInfo>();
         Dictionary<uint, DatabaseVehicle> lastSave = new Dictionary<uint, DatabaseVehicle>();
+        bool loadingVehicles = false;
+        Color vehicleManagerPrefix = Color.gray;
 
         List<ushort> vehicleDestroySounds = new List<ushort> { 19, 20, 35, 36, 37, 53, 61, 62, 63, 65, 69, 71, 72, 81, 89 };
         System.Random r = new System.Random();
@@ -71,21 +73,22 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public void onLatePrePreLevelLoaded(int level) {
+            loadingVehicles = true;
             Level.onLevelLoaded -= onLatePrePreLevelLoaded;
 
             Logger.Log("Receiving owned vehicles from database...");
             List<DatabaseVehicle> vehicles = AlskeboUnturnedPlugin.databaseManager.receiveOwnedVehicles();
             int naturalCount = 0;
             foreach (DatabaseVehicle v in vehicles) {
-                if (v.steamId == 0)
+                if (v.ownerSteamId == 0)
                     naturalCount++;
             }
 
             int defaultVehicleCount = 24;
             bool removed = true;
             if (naturalCount >= defaultVehicleCount) {
-                Logger.Log("Removing all default vehicles (" + VehicleManager.Vehicles.Count + ")...");
-                foreach (InteractableVehicle v in VehicleManager.Vehicles) {
+                Logger.Log("Removing all default vehicles (" + VehicleManager.vehicles.Count + ")...");
+                foreach (InteractableVehicle v in VehicleManager.vehicles) {
                     if (v != null)
                         v.tellExploded();
                 }
@@ -108,12 +111,15 @@ namespace AlskeboUnturnedPlugin {
                 vehicle.tellHealth(dbv.health);
                 VehicleManager.sendVehicleHealth(vehicle, dbv.health);
 
-                storeOwnedVehicle(new CSteamID(dbv.steamId), vehicle, dbv.id);
+                vehicle.tellLocked(new CSteamID(dbv.ownerSteamId), new CSteamID(dbv.groupSteamId), dbv.locked);
+
+                storeOwnedVehicle(new CSteamID(dbv.ownerSteamId), new CSteamID(dbv.groupSteamId), vehicle, dbv.id);
             }
 
             if (!removed)
                 saveVehicles(null, null);
             Logger.Log("Done.");
+            loadingVehicles = false;
         }
 
         public void onPluginUnloaded() {
@@ -151,7 +157,7 @@ namespace AlskeboUnturnedPlugin {
 
             if (!vehicleOwners.ContainsKey(vehicle.instanceID)) {
                 // Vehicle was spawned with /v or unturned respawned it
-                long databaseId = storeOwnedVehicle(new CSteamID(0), vehicle);
+                long databaseId = storeOwnedVehicle(new CSteamID(0), new CSteamID(0), vehicle);
                 Logger.Log("Stored naturally spawned vehicle with ID " + databaseId + ".");
             }
 
@@ -162,11 +168,13 @@ namespace AlskeboUnturnedPlugin {
                 String whoNickname = (info != null ? info.ownerName : "Unknown player");
 
                 if (player.CSteamID.Equals(owner))
-                    UnturnedChat.Say(player, "Welcome back to your " + vehicleName + ", " + player.DisplayName + "!");
-                else
-                    UnturnedChat.Say(player, "This " + vehicleName + " belongs to " + whoNickname + ".");
+                    UnturnedChat.Say(player, "Welcome back to your " + vehicleName + ", " + player.DisplayName + "!", vehicleManagerPrefix);
+                else {
+                    UnturnedChat.Say(player, "This " + vehicleName + " belongs to " + whoNickname + ".", vehicleManagerPrefix);
+                    UnturnedChat.Say(owner, "Your " + vehicle.asset.Name + " was stolen!");
+                }
             } else
-                UnturnedChat.Say(player, "This natural " + vehicleName + " will despawn after being inactive.");
+                UnturnedChat.Say(player, "This natural " + vehicleName + " will despawn when inactive with low fuel.", vehicleManagerPrefix);
 
         }
 
@@ -184,7 +192,7 @@ namespace AlskeboUnturnedPlugin {
                     }
 
                     if (!lastSave.ContainsKey(vehicle.instanceID) || !isSimilar(vehicle, lastSave[vehicle.instanceID])) {
-                        DatabaseVehicle dbv = DatabaseVehicle.fromInteractableVehicle(info.databaseId, info.ownerId.m_SteamID, vehicle);
+                        DatabaseVehicle dbv = DatabaseVehicle.fromInteractableVehicle(info.databaseId, info.ownerId.m_SteamID, info.groupId.m_SteamID, vehicle);
                         AlskeboUnturnedPlugin.databaseManager.updateVehicle(dbv);
                         if (lastSave.ContainsKey(vehicle.instanceID))
                             lastSave[vehicle.instanceID] = dbv;
@@ -204,7 +212,8 @@ namespace AlskeboUnturnedPlugin {
                     if (pair.Value.timesHonked >= 10) {
                         pair.Value.vehicle.askDamage(ushort.MaxValue, false);
                     } else if (!pair.Value.lastHonked) {
-                        VehicleManager.sendVehicleHeadlights(vehicle);
+                        //TODO: Fix headlights
+                        //VehicleManager.sendVehicleHeadlights(vehicle);
                         EffectManager.sendEffect(vehicleDestroySounds[r.Next(vehicleDestroySounds.Count - 1)], 200, vehicle.transform.position);
                         pair.Value.lastHonked = true;
                         ++pair.Value.timesHonked;
@@ -225,7 +234,7 @@ namespace AlskeboUnturnedPlugin {
             foreach (InteractableVehicle vehicle in VehicleManager.Vehicles) {
                 if (!vehicleOwners.ContainsKey(vehicle.instanceID) && !vehicle.isExploded && !vehicle.isDrowned && !vehicle.isDead) {
                     // Vehicle was spawned with /v or unturned respawned it
-                    long databaseId = storeOwnedVehicle(new CSteamID(0), vehicle);
+                    long databaseId = storeOwnedVehicle(new CSteamID(0), new CSteamID(0), vehicle);
                     Logger.Log("Stored naturally spawned vehicle with ID " + databaseId + " and instanceID " + vehicle.instanceID + ".");
                 }
             }
@@ -238,7 +247,7 @@ namespace AlskeboUnturnedPlugin {
                     deleteOwnedVehicle(pair.Value.databaseId, pair.Value.instanceId);
                     Logger.Log("Deleted exploded/drowned/dead vehicle with ID " + pair.Value.databaseId + " and instanceID " + pair.Value.instanceId + (vehicle == null ? " (null)" : "") + ".");
                 } else if (!lastSave.ContainsKey(pair.Key) || !isSimilar(vehicle, lastSave[pair.Key])) {
-                    DatabaseVehicle dbv = DatabaseVehicle.fromInteractableVehicle(pair.Value.databaseId, pair.Value.ownerId.m_SteamID, vehicle);
+                    DatabaseVehicle dbv = DatabaseVehicle.fromInteractableVehicle(pair.Value.databaseId, pair.Value.ownerId.m_SteamID, pair.Value.groupId.m_SteamID, vehicle);
                     new Thread(delegate () {
                         AlskeboUnturnedPlugin.databaseManager.updateVehicle(dbv);
                     }).Start();
@@ -253,7 +262,7 @@ namespace AlskeboUnturnedPlugin {
         private bool isSimilar(InteractableVehicle first, DatabaseVehicle second) {
             if (first.transform.position.x == second.x && first.transform.position.y == second.y && first.transform.position.z == second.z
                 && first.transform.rotation.x == second.rx && first.transform.rotation.y == second.ry && first.transform.rotation.z == second.rz && first.transform.rotation.w == second.rw) {
-                if (first.fuel == second.fuel && first.health == second.health)
+                if (first.fuel == second.fuel && first.health == second.health && first.isLocked == second.locked && first.lockedGroup.m_SteamID == second.groupSteamId)
                     return true;
             }
             return false;
@@ -262,28 +271,23 @@ namespace AlskeboUnturnedPlugin {
         public InteractableVehicle givePlayerOwnedVehicle(UnturnedPlayer player, ushort carId) {
             InteractableVehicle vehicle = giveVehicle(player, carId);
             if (vehicle == null) {
-                UnturnedChat.Say(player, "Could not give you a vehicle.");
+                UnturnedChat.Say(player, "Could not give you a vehicle.", vehicleManagerPrefix);
                 return null;
             }
 
-            if (!playerOwnedVehicles.ContainsKey(player.CSteamID))
-                playerOwnedVehicles.Add(player.CSteamID, new List<VehicleInfo>());
-
-            List<VehicleInfo> list = playerOwnedVehicles[player.CSteamID];
-            VehicleInfo info = new VehicleInfo();
-            info.instanceId = vehicle.instanceID;
-            info.databaseId = AlskeboUnturnedPlugin.databaseManager.insertOwnedVehicle(player.CSteamID, vehicle);
-            info.ownerId = player.CSteamID;
-            info.ownerName = player.DisplayName;
-            list.Add(info);
-            playerOwnedVehicles[player.CSteamID] = list;
-            vehicleOwners.Add(vehicle.instanceID, info);
+            storeOwnedVehicle(player.CSteamID, player.SteamGroupID, vehicle, -1);
             return vehicle;
         }
 
         public CSteamID getVehicleOwner(InteractableVehicle vehicle) {
             if (vehicleOwners.ContainsKey(vehicle.instanceID))
                 return vehicleOwners[vehicle.instanceID].ownerId;
+            return CSteamID.Nil;
+        }
+
+        public CSteamID getVehicleGroup(InteractableVehicle vehicle) {
+            if (vehicleOwners.ContainsKey(vehicle.instanceID))
+                return vehicleOwners[vehicle.instanceID].groupId;
             return CSteamID.Nil;
         }
 
@@ -299,9 +303,11 @@ namespace AlskeboUnturnedPlugin {
             return null;
         }
 
-        private long storeOwnedVehicle(CSteamID ownerId, InteractableVehicle vehicle, long databaseId = -1) {
+        private long storeOwnedVehicle(CSteamID ownerId, CSteamID groupId, InteractableVehicle vehicle, long databaseId = -1) {
+            vehicle.onLockUpdated += new VehicleLockUpdated(delegate () { onLockUpdated(vehicle); });
+
             if (databaseId == -1)
-                databaseId = AlskeboUnturnedPlugin.databaseManager.insertOwnedVehicle(ownerId, vehicle);
+                databaseId = AlskeboUnturnedPlugin.databaseManager.insertOwnedVehicle(ownerId, groupId, vehicle);
             if (!playerOwnedVehicles.ContainsKey(ownerId))
                 playerOwnedVehicles.Add(ownerId, new List<VehicleInfo>());
 
@@ -310,9 +316,12 @@ namespace AlskeboUnturnedPlugin {
             info.instanceId = vehicle.instanceID;
             info.databaseId = databaseId;
             info.ownerId = ownerId;
-            info.ownerName = "TEMPORARY NAME";
+            info.groupId = groupId;
+            String ownerNameTemp = AlskeboUnturnedPlugin.databaseManager.getPlayerDisplayName(ownerId);
+            info.ownerName = (ownerNameTemp != null ? ownerNameTemp : "Unknown player");
             if (ownerId.m_SteamID == 0)
                 info.ownerName = "Nature";
+            info.isLocked = vehicle.isLocked;
             list.Add(info);
             playerOwnedVehicles[ownerId] = list;
             vehicleOwners.Add(vehicle.instanceID, info);
@@ -360,6 +369,78 @@ namespace AlskeboUnturnedPlugin {
                 point.y = hitInfo.point.y + 16f;
             InteractableVehicle vehicle = CustomVehicleManager.customSpawnVehicle(id, point, player.Player.transform.rotation);
             return vehicle;
+        }
+
+        private void onLockUpdated(InteractableVehicle vehicle) {
+            if (loadingVehicles)
+                return;
+
+            if (vehicle != null) {
+                CSteamID ownerId = getVehicleOwner(vehicle);
+                CSteamID ownerGroupId = getVehicleGroup(vehicle);
+                CSteamID driverId = CSteamID.Nil;
+                if (ownerId != null && vehicle.passengers != null && vehicle.passengers.Length > 0) {
+                    Passenger driver = vehicle.passengers[0];
+                    if (driver != null) {
+                        if (driver.player != null) {
+                            driverId = driver.player.playerID.CSteamID;
+                            if (driverId.m_SteamID == ownerId.m_SteamID) {
+                                storeVehicleLocked(vehicle);
+                                UnturnedChat.Say(driverId, "This vehicle is now " + (vehicle.isLocked ? "locked" : "unlocked") + ".", vehicleManagerPrefix);
+                                return;
+                            } else {
+                                CSteamID driverGroupId = driver.player.playerID.SteamGroupID;
+                                if (driverGroupId.m_SteamID == ownerGroupId.m_SteamID && driverGroupId.m_SteamID != 0
+                                    && ownerGroupId.m_SteamID != 0 && driverGroupId != CSteamID.Nil && ownerGroupId != CSteamID.Nil) {
+                                    storeVehicleLocked(vehicle);
+                                    UnturnedChat.Say(driverId, "This vehicle is now " + (vehicle.isLocked ? "locked" : "unlocked") + ".", vehicleManagerPrefix);
+                                    return;
+                                }
+                            }
+                            forceVehicleLockState(vehicle, ownerId, ownerGroupId, driverId);
+                            return;
+                        }
+                    }
+                }
+                // Player used lockpick
+                storeVehicleLocked(vehicle);
+                UnturnedChat.Say("A " + vehicle.asset.Name + " has been lockpicked!");
+            }
+        }
+
+        private void storeVehicleLocked(InteractableVehicle vehicle) {
+            if (vehicleOwners.ContainsKey(vehicle.instanceID)) {
+                VehicleInfo info = vehicleOwners[vehicle.instanceID];
+                info.isLocked = vehicle.isLocked;
+                vehicleOwners[vehicle.instanceID] = info;
+
+            } else
+                Logger.LogWarning("Could not store lock state");
+        }
+
+        private void forceVehicleLockState(InteractableVehicle vehicle, CSteamID owner, CSteamID group, CSteamID thief) {
+            if (vehicleOwners.ContainsKey(vehicle.instanceID)) {
+                VehicleInfo info = vehicleOwners[vehicle.instanceID];
+                if (vehicle.isLocked != info.isLocked) {
+                    if (thief != null && thief.m_SteamID != CSteamID.Nil.m_SteamID) {
+                        //VehicleManager.Instance.askVehicleLock(thief);
+                        sendForceVehicleLock(vehicle, owner, group, info.isLocked);
+                        UnturnedChat.Say(thief, "You do not have the keys for this vehicle.", vehicleManagerPrefix);
+                    } else
+                        vehicle.tellLocked(owner, group, info.isLocked);
+                }
+            } else
+                Logger.LogWarning("Could not force lock state");
+        }
+
+        private void sendForceVehicleLock(InteractableVehicle vehicle, CSteamID owner, CSteamID group, bool locked) {
+            SteamChannel channel = VehicleManager.Instance.channel;
+            object[] objArray = new object[4];
+            objArray[0] = vehicle.instanceID;
+            objArray[1] = owner;
+            objArray[2] = group;
+            objArray[3] = locked;
+            channel.send("tellVehicleLock", (ESteamCall)1, (ESteamPacket)15, objArray);
         }
 
     }

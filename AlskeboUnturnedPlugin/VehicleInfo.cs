@@ -9,6 +9,8 @@ namespace AlskeboUnturnedPlugin {
         public uint instanceId;
         public long databaseId;
         public CSteamID ownerId;
+        public CSteamID groupId;
         public String ownerName;
+        public bool isLocked;
     }
 }

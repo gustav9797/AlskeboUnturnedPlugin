@@ -16,11 +16,15 @@ namespace AlskeboUnturnedPlugin {
             timer.Interval = 1000 * 60 * 2; // Every x minutes
             timer.Elapsed += Timer_Elapsed;
 
-            messages.Add("Natural cars will respawn after some time being idle with low fuel level. You will notice it.");
-            messages.Add("You can view structure health by executing the command \"/structureinfo\" and then punch close to any structures.");
-            messages.Add("You can view barricade info and health by executing the command \"/barricadeinfo\" and then punch close to any barricades.");
-            messages.Add("Alskebo.com is an Unturned server with many custom features. Take a look in \"/p\" to show some commands.");
-            messages.Add("When you join Alskebo.com for the first time, you will get a free personal vehicle which does not despawn. Get it by executing \"/firstvehicle\".");
+            messages.Add("Natural cars respawn after some time idle with low fuel.");
+            messages.Add("Cars have 5x HP. Buildables have 2x HP.");
+            messages.Add("You can view structure health with the command \"/structureinfo\" and then punch your structures.");
+            messages.Add("You can view barricade info and health with the command \"/barricadeinfo\" and then punch your barricades.");
+            messages.Add("Alskebo.com has many custom features. Take a look in \"/p\".");
+            messages.Add("When you join for the first time you will get a personal vehicle which does not despawn. Get it by executing \"/firstvehicle\".");
+            messages.Add("Several ways to get personal vehicles are being added.");
+            messages.Add("Admin abuse is nonexistent in this server.");
+            messages.Add("Natural vehicles can't be locked. You can drive them all!");
 
             timer.Start();
         }
