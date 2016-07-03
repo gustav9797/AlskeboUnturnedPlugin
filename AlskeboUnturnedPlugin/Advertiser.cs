@@ -1,4 +1,5 @@
 ﻿using Rocket.Unturned.Chat;
+using SDG.Unturned;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -38,12 +39,16 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public void displayMessage() {
+            if (Provider.Players.Count <= 0)
+                return;
+
             String message = messages[r.Next(messages.Count)];
             if (message.Equals(lastMessage)) {
                 displayMessage();
                 return;
             }
             UnturnedChat.Say(message, UnityEngine.Color.yellow);
+            lastMessage = message;
         }
     }
 }
