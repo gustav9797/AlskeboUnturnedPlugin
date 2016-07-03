@@ -9,7 +9,7 @@ using System.Text;
 namespace AlskeboUnturnedPlugin {
     public class StructureInfoCommand : IRocketCommand {
         public AllowedCaller AllowedCaller {
-            get { return AllowedCaller.Both; }
+            get { return AllowedCaller.Player; }
         }
 
         public string Name {
@@ -29,20 +29,18 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public void Execute(IRocketPlayer caller, string[] command) {
-            if (caller is UnturnedPlayer) {
-                UnturnedPlayer player = (UnturnedPlayer)caller;
-                bool current = AlskeboUnturnedPlugin.playerManager.getPlayerData(player, "structureinfo");
-                AlskeboUnturnedPlugin.playerManager.setPlayerData(player, "structureinfo", !current);
-                UnturnedChat.Say(caller, "Showing structure info: " + ((!current).ToString().ToLower()));
-            } else {
-                UnturnedChat.Say(caller, "You must be in-game to execute this command.");
-            }
+            UnturnedPlayer player = (UnturnedPlayer)caller;
+            bool current = AlskeboUnturnedPlugin.playerManager.getPlayerData(player, "structureinfo");
+            AlskeboUnturnedPlugin.playerManager.setPlayerData(player, "structureinfo", !current);
+            UnturnedChat.Say(caller, "Showing structure info: " + ((!current).ToString().ToLower()));
+            if (current)
+                UnturnedChat.Say(caller, "Punch near your structures to show their health.");
         }
 
         public List<string> Permissions {
             get {
                 List<String> list = new List<string>();
-                list.Add("alskebo.structureinfo");
+                list.Add("a.structureinfo");
                 return list;
             }
         }

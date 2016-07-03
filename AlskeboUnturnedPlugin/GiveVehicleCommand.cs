@@ -94,7 +94,7 @@ namespace AlskeboUnturnedPlugin {
         public List<string> Permissions {
             get {
                 List<String> list = new List<string>();
-                list.Add("alskebo.giveownedvehicle");
+                list.Add("a.giveownedvehicle");
                 return list;
             }
         }

@@ -12,7 +12,7 @@ using System.Text;
 namespace AlskeboUnturnedPlugin {
     public class DebugCommand : IRocketCommand {
         public AllowedCaller AllowedCaller {
-            get { return AllowedCaller.Both; }
+            get { return AllowedCaller.Player; }
         }
 
         public string Name {
@@ -24,7 +24,7 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public string Syntax {
-            get { return " trololo "; }
+            get { return ""; }
         }
 
         public List<string> Aliases {
@@ -32,19 +32,14 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public void Execute(IRocketPlayer caller, string[] command) {
-            if (caller is UnturnedPlayer) {
-                UnturnedPlayer player = (UnturnedPlayer)caller;
-
-                BarricadeManager.load();
-
-            } else
-                UnturnedChat.Say(caller, "You must be in-game to execute this command.");
+            UnturnedPlayer player = (UnturnedPlayer)caller;
+            BarricadeManager.load();
         }
 
         public List<string> Permissions {
             get {
                 List<String> list = new List<string>();
-                list.Add("alskebo.debug");
+                list.Add("a.debug");
                 return list;
             }
         }

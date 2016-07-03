@@ -11,6 +11,7 @@ namespace AlskeboUnturnedPlugin {
         private string lastMessage = "";
         private Random r = new Random();
         private Timer timer;
+        private String prefix = "[INFO]";
 
         public Advertiser() {
             timer = new Timer();
@@ -19,13 +20,15 @@ namespace AlskeboUnturnedPlugin {
 
             messages.Add("Natural cars respawn after some time idle with low fuel.");
             messages.Add("Cars have 5x HP. Buildables have 2x HP.");
-            messages.Add("You can view structure health with the command \"/structureinfo\" and then punch your structures.");
-            messages.Add("You can view barricade info and health with the command \"/barricadeinfo\" and then punch your barricades.");
+            messages.Add("You can view structure health with the command \"/structureinfo\".");
+            messages.Add("You can view barricade health with the command \"/barricadeinfo\".");
             messages.Add("Alskebo.com has many custom features. Take a look in \"/p\".");
-            messages.Add("When you join for the first time you will get a personal vehicle which does not despawn. Get it by executing \"/firstvehicle\".");
+            //messages.Add("When you join for the first time you will get a personal vehicle. Get it with \"/firstvehicle\".");
             messages.Add("Several ways to get personal vehicles are being added.");
             messages.Add("Admin abuse is nonexistent in this server.");
             messages.Add("Natural vehicles can't be locked. You can drive them all!");
+            messages.Add("You can only lock your own vehicles.");
+            messages.Add("You can view your owned vehicles with \"/myvehicles\".");
 
             timer.Start();
         }
@@ -47,7 +50,7 @@ namespace AlskeboUnturnedPlugin {
                 displayMessage();
                 return;
             }
-            UnturnedChat.Say(message, UnityEngine.Color.yellow);
+            UnturnedChat.Say(prefix + " " + message, UnityEngine.Color.yellow);
             lastMessage = message;
         }
     }

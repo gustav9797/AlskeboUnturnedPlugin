@@ -12,7 +12,7 @@ using System.Text;
 namespace AlskeboUnturnedPlugin {
     public class EnterVehicleCommand : IRocketCommand {
         public AllowedCaller AllowedCaller {
-            get { return AllowedCaller.Both; }
+            get { return AllowedCaller.Player; }
         }
 
         public string Name {
@@ -32,29 +32,26 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public void Execute(IRocketPlayer caller, string[] command) {
-            if (caller is UnturnedPlayer) {
-                UnturnedPlayer player = (UnturnedPlayer)caller;
+            UnturnedPlayer player = (UnturnedPlayer)caller;
 
-                uint id = 0;
-                if (command.Length >= 1 && uint.TryParse(command[0], out id)) {
-                    InteractableVehicle vehicle = VehicleManager.getVehicle(id);
-                    if (vehicle != null) {
-                        player.Teleport(vehicle.transform.position, 0);
-                        VehicleManager.Instance.askEnterVehicle(player.CSteamID, id, vehicle.asset.hash, (byte)vehicle.asset.engine);
-                    } else
-                        UnturnedChat.Say(caller, "Vehicle null.");
-                } else {
-                    UnturnedChat.Say(caller, U.Translate("command_generic_invalid_parameter"));
-                    throw new WrongUsageOfCommandException(caller, this);
-                }
-            } else
-                UnturnedChat.Say(caller, "You must be in-game to execute this command.");
+            uint id = 0;
+            if (command.Length >= 1 && uint.TryParse(command[0], out id)) {
+                InteractableVehicle vehicle = VehicleManager.getVehicle(id);
+                if (vehicle != null) {
+                    player.Teleport(vehicle.transform.position, 0);
+                    VehicleManager.Instance.askEnterVehicle(player.CSteamID, id, vehicle.asset.hash, (byte)vehicle.asset.engine);
+                } else
+                    UnturnedChat.Say(caller, "Vehicle null.");
+            } else {
+                UnturnedChat.Say(caller, U.Translate("command_generic_invalid_parameter"));
+                throw new WrongUsageOfCommandException(caller, this);
+            }
         }
 
         public List<string> Permissions {
             get {
                 List<String> list = new List<string>();
-                list.Add("alskebo.entervehicle");
+                list.Add("a.entervehicle");
                 return list;
             }
         }

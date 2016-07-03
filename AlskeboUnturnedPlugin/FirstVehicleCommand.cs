@@ -9,7 +9,7 @@ using System.Text;
 namespace AlskeboUnturnedPlugin {
     public class FirstVehicleCommand : IRocketCommand {
         public AllowedCaller AllowedCaller {
-            get { return AllowedCaller.Both; }
+            get { return AllowedCaller.Player; }
         }
 
         public string Name {
@@ -29,25 +29,21 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public void Execute(IRocketPlayer caller, string[] command) {
-            if (caller is UnturnedPlayer) {
-                UnturnedPlayer player = (UnturnedPlayer)caller;
+            UnturnedPlayer player = (UnturnedPlayer)caller;
 
-                if (!AlskeboUnturnedPlugin.databaseManager.playerHasReceivedVehicle(player.CSteamID)) {
-                    AlskeboUnturnedPlugin.vehicleManager.givePlayerOwnedVehicle(player, (ushort)AlskeboUnturnedPlugin.r.Next(69, 75));
-                    AlskeboUnturnedPlugin.databaseManager.setPlayerReceivedVehicle(player.CSteamID, true);
-                    UnturnedChat.Say(caller, "Enjoy your noob-car!");
-                } else {
-                    UnturnedChat.Say(caller, "You have already received your noob-car.");
-                }
+            if (!AlskeboUnturnedPlugin.databaseManager.playerHasReceivedVehicle(player.CSteamID)) {
+                AlskeboUnturnedPlugin.vehicleManager.givePlayerOwnedVehicle(player, (ushort)AlskeboUnturnedPlugin.r.Next(69, 75));
+                AlskeboUnturnedPlugin.databaseManager.setPlayerReceivedVehicle(player.CSteamID, true);
+                UnturnedChat.Say(caller, "Enjoy your noob-car!");
             } else {
-                UnturnedChat.Say(caller, "You must be in-game to execute this command.");
+                UnturnedChat.Say(caller, "You have already received your noob-car.");
             }
         }
 
         public List<string> Permissions {
             get {
                 List<String> list = new List<string>();
-                list.Add("alskebo.firstvehicle");
+                list.Add("a.firstvehicle");
                 return list;
             }
         }
