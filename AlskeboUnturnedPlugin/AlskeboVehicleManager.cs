@@ -87,9 +87,12 @@ namespace AlskeboUnturnedPlugin {
             bool removed = true;
             if (naturalCount >= defaultVehicleCount) {
                 Logger.Log("Removing all default vehicles (" + VehicleManager.vehicles.Count + ")...");
+            start:
                 foreach (InteractableVehicle v in VehicleManager.vehicles) {
-                    if (v != null)
-                        v.tellExploded();
+                    if (v != null) {
+                        VehicleManager.Instance.tellVehicleDestroy(Provider.server, v.instanceID);
+                        goto start;
+                    }
                 }
                 CustomVehicleManager.customseq = 0U;
                 VehicleManager.Vehicles = new List<InteractableVehicle>();
@@ -203,7 +206,7 @@ namespace AlskeboUnturnedPlugin {
             foreach (KeyValuePair<uint, DestroyingVehicleInfo> pair in vehiclesToBeDestroyed) {
                 if (!pair.Value.vehicle.isDead && (DateTime.Now - pair.Value.lastActivity).Minutes >= 5) {
                     InteractableVehicle vehicle = pair.Value.vehicle;
-                    if (pair.Value.timesHonked >= 10) {
+                    if (pair.Value.timesHonked >= 20) {
                         pair.Value.vehicle.askDamage(ushort.MaxValue, false);
                     } else if (!pair.Value.lastHonked) {
                         CustomVehicleManager.sendVehicleHeadlights(vehicle);
