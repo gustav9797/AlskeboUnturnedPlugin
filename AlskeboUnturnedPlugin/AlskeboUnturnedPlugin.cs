@@ -15,7 +15,7 @@ using System.Threading;
 using Rocket.API.Extensions;
 
 namespace AlskeboUnturnedPlugin {
-    public class AlskeboUnturnedPlugin : RocketPlugin {
+    public class AlskeboUnturnedPlugin : RocketPlugin<AlskeboConfiguration> {
         class PlayerData {
             public bool isInsideVehicle = false;
             public InteractableVehicle vehicle = null;
@@ -32,7 +32,7 @@ namespace AlskeboUnturnedPlugin {
         public override void LoadPlugin() {
             base.LoadPlugin();
 
-            databaseManager = new DatabaseManager();
+            databaseManager = new DatabaseManager(Configuration.Instance);
             vehicleManager = new AlskeboVehicleManager();
             playerManager = new AlskeboPlayerManager();
             advertiser = new Advertiser();
@@ -185,7 +185,7 @@ namespace AlskeboUnturnedPlugin {
 
         private void onPlayerUpdateStat(UnturnedPlayer player, EPlayerStat stat) {
             if (stat == EPlayerStat.KILLS_ZOMBIES_MEGA)
-                UnturnedChat.Say("A legend says " + player.DisplayName + " has killed a mega zombie...");
+                UnturnedChat.Say("Rumours say " + player.DisplayName + " has killed a mega zombie...", Color.blue);
         }
 
     }

@@ -40,16 +40,18 @@ namespace AlskeboUnturnedPlugin {
     }
 
     public class DatabaseManager {
+        private String databaseIP;
 
-        public DatabaseManager() {
+        public DatabaseManager(AlskeboConfiguration config) {
             new I18N.West.CP1250();
+            databaseIP = config.databaseIP;
         }
 
         private MySqlConnection createConnection() {
             MySqlConnection connection = null;
             //51.255.174.193
             try {
-                connection = new MySqlConnection(String.Format("SERVER={0};DATABASE={1};UID={2};PASSWORD={3};PORT={4};", "51.255.174.193", "unturned", "unturned", "13421342", "3306"));
+                connection = new MySqlConnection(String.Format("SERVER={0};DATABASE={1};UID={2};PASSWORD={3};PORT={4};", databaseIP, "unturned", "unturned", "13421342", "3306"));
             } catch (Exception ex) {
                 Logger.LogException(ex);
             }

@@ -38,7 +38,7 @@ namespace AlskeboUnturnedPlugin {
                 InteractableVehicle vehicle = VehicleManager.getVehicle(info.instanceId);
                 if (vehicle != null) {
                     String pos = Math.Round(vehicle.transform.position.x) + "|" + Math.Round(vehicle.transform.position.y) + "|" + Math.Round(vehicle.transform.position.z);
-                    UnturnedChat.Say(player, vehicle.asset.Name + " - HP: " + vehicle.health + " Locked: " + info.isLocked + " Pos: " + pos);
+                    UnturnedChat.Say(player, vehicle.asset.Name + " - HP:" + vehicle.health + " Locked: " + (info.isLocked ? "Yes" : "No") + " Pos:" + pos + " ID:" + vehicle.instanceID);
                 }
             }
             if (vehicles.Count <= 0)
