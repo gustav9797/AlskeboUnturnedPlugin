@@ -188,5 +188,20 @@ namespace AlskeboUnturnedPlugin {
                 UnturnedChat.Say("Rumours say " + player.DisplayName + " has killed a mega zombie...", Color.blue);
         }
 
+        public static LocationNode getClosestLocation(Vector3 pos) {
+            LocationNode closest = null;
+            float closestDistance = float.MaxValue;
+            foreach (Node node in LevelNodes.Nodes) {
+                if (node.type == ENodeType.LOCATION) {
+                    float dist = Vector3.Distance(node.Position, pos);
+                    if (closest == null || dist < closestDistance) {
+                        closest = (LocationNode)node;
+                        closestDistance = dist;
+                    }
+                }
+            }
+            return closest;
+        }
+
     }
 }
