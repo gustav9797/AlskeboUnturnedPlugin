@@ -27,6 +27,7 @@ namespace AlskeboUnturnedPlugin {
         public static AlskeboVehicleManager vehicleManager;
         public static AlskeboPlayerManager playerManager;
         public static Advertiser advertiser;
+        public static VehicleShop vehicleShop;
         public static System.Random r = new System.Random();
 
         public override void LoadPlugin() {
@@ -36,6 +37,7 @@ namespace AlskeboUnturnedPlugin {
             vehicleManager = new AlskeboVehicleManager();
             playerManager = new AlskeboPlayerManager();
             advertiser = new Advertiser();
+            vehicleShop = new VehicleShop();
             U.Events.OnPlayerConnected += onPlayerConnected;
             U.Events.OnPlayerDisconnected += onPlayerDisconnected;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateGesture += onPlayerUpdateGesture;
