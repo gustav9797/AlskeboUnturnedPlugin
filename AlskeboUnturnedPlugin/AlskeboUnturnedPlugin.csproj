@@ -81,6 +81,7 @@
     <Compile Include="AlskeboUnturnedPlugin.cs" />
     <Compile Include="CustomVehicleManager.cs" />
     <Compile Include="DatabaseManager.cs" />
+    <Compile Include="HelpCommand.cs" />
     <Compile Include="DebugCommand.cs" />
     <Compile Include="BalanceCommand.cs" />
     <Compile Include="EnterVehicleCommand.cs" />

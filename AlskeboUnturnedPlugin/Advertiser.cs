@@ -7,7 +7,7 @@ using System.Timers;
 
 namespace AlskeboUnturnedPlugin {
     public class Advertiser {
-        private List<string> messages = new List<string>();
+        public List<string> messages = new List<string>();
         private string lastMessage = "";
         private Random r = new Random();
         private Timer timer;
@@ -23,15 +23,14 @@ namespace AlskeboUnturnedPlugin {
             messages.Add("You can view structure health with the command \"/structureinfo\".");
             messages.Add("You can view barricade health with the command \"/barricadeinfo\".");
             messages.Add("Alskebo.com has many custom features. Take a look in \"/p\".");
-            //messages.Add("When you join for the first time you will get a personal vehicle. Get it with \"/firstvehicle\".");
-            messages.Add("Several ways to get personal vehicles are being added.");
+            messages.Add("Buy vehicles with \"/buyvehicle <id/name>\".");
             messages.Add("Admin abuse is nonexistent in this server.");
             messages.Add("Natural vehicles can't be locked. You can drive them all!");
-            messages.Add("You can only lock your own vehicles.");
             messages.Add("You can view your owned vehicles with \"/myvehicles\".");
             messages.Add("When you find money items you can deposit them with \"/depositmoney\".");
             messages.Add("To check your balance, use \"/balance\".");
-            messages.Add("Several ways to spend money are being added.");
+            messages.Add("Use \"/help\" to display all help messages.");
+            messages.Add("You can only lock your own vehicles.");
 
             timer.Start();
         }

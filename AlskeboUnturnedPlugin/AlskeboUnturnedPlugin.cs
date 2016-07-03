@@ -78,9 +78,10 @@ namespace AlskeboUnturnedPlugin {
             playerManager.onPlayerConnected(player);
 
             new Thread(delegate () {
-                if (!databaseManager.playerExists(player.CSteamID))
+                if (!databaseManager.playerExists(player.CSteamID)) {
                     databaseManager.insertPlayer(player.CSteamID, player.DisplayName, false);
-                else
+                    UnturnedChat.Say(player, "Welcome to Alskebo. Use /help to get started.");
+                } else
                     databaseManager.setPlayerLastJoin(player.CSteamID);
 
                 DatabasePlayer dbp = AlskeboUnturnedPlugin.databaseManager.receivePlayer(player.CSteamID);
