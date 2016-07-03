@@ -82,7 +82,9 @@
     <Compile Include="CustomVehicleManager.cs" />
     <Compile Include="DatabaseManager.cs" />
     <Compile Include="DebugCommand.cs" />
+    <Compile Include="BalanceCommand.cs" />
     <Compile Include="EnterVehicleCommand.cs" />
+    <Compile Include="DepositMoneyCommand.cs" />
     <Compile Include="MyVehiclesCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BarricadeInfoCommand.cs" />

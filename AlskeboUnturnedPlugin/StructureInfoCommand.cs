@@ -30,7 +30,7 @@ namespace AlskeboUnturnedPlugin {
 
         public void Execute(IRocketPlayer caller, string[] command) {
             UnturnedPlayer player = (UnturnedPlayer)caller;
-            bool current = AlskeboUnturnedPlugin.playerManager.getPlayerData(player, "structureinfo");
+            bool current = AlskeboUnturnedPlugin.playerManager.getPlayerBoolean(player, "structureinfo");
             AlskeboUnturnedPlugin.playerManager.setPlayerData(player, "structureinfo", !current);
             UnturnedChat.Say(caller, "Showing structure info: " + ((!current).ToString().ToLower()));
             if (!current) {

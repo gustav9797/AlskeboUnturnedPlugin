@@ -39,6 +39,13 @@ namespace AlskeboUnturnedPlugin {
         }
     }
 
+    public class DatabasePlayer {
+        public ulong steamId;
+        public string displayName;
+        public bool receivedVehicle;
+        public int balance;
+    }
+
     public class DatabaseManager {
         private String databaseIP;
 
@@ -88,20 +95,29 @@ namespace AlskeboUnturnedPlugin {
             }
         }
 
-        public bool playerHasReceivedVehicle(CSteamID id) {
-            bool has = false;
+        public DatabasePlayer receivePlayer(CSteamID id) {
+            DatabasePlayer output = null;
             try {
                 MySqlConnection connection = createConnection();
                 MySqlCommand command = connection.CreateCommand();
-                command.CommandText = "SELECT receivedvehicle FROM players WHERE steamid = '" + id.m_SteamID + "';";
+                command.CommandText = "SELECT * FROM players WHERE steamid = '" + id.m_SteamID + "';";
                 connection.Open();
-                object result = command.ExecuteScalar();
-                Boolean.TryParse(result.ToString(), out has);
+                MySqlDataReader reader = command.ExecuteReader();
+                if (reader.HasRows) {
+                    if (reader.Read()) {
+                        output = new DatabasePlayer();
+                        output.steamId = reader.GetUInt64("steamid");
+                        output.displayName = reader.GetString("displayname");
+                        output.receivedVehicle = reader.GetBoolean("receivedvehicle");
+                        output.balance = reader.GetInt32("balance");
+                    }
+                }
+                reader.Close();
                 connection.Close();
             } catch (Exception e) {
                 Logger.Log(e);
             }
-            return has;
+            return output;
         }
 
         public void setPlayerReceivedVehicle(CSteamID id, bool receivedVehicle) {
@@ -109,6 +125,19 @@ namespace AlskeboUnturnedPlugin {
                 MySqlConnection connection = createConnection();
                 MySqlCommand command = connection.CreateCommand();
                 command.CommandText = "UPDATE players SET receivedvehicle = '" + receivedVehicle.ToString() + "' WHERE steamid = '" + id.m_SteamID + "';";
+                connection.Open();
+                command.ExecuteNonQuery();
+                connection.Close();
+            } catch (Exception e) {
+                Logger.Log(e);
+            }
+        }
+
+        public void setPlayerBalance(CSteamID id, int balance) {
+            try {
+                MySqlConnection connection = createConnection();
+                MySqlCommand command = connection.CreateCommand();
+                command.CommandText = "UPDATE players SET balance = '" + balance + "' WHERE steamid = '" + id.m_SteamID + "';";
                 connection.Open();
                 command.ExecuteNonQuery();
                 connection.Close();

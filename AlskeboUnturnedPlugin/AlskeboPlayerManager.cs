@@ -6,12 +6,12 @@ using System.Text;
 
 namespace AlskeboUnturnedPlugin {
     public class AlskeboPlayerManager {
-        Dictionary<CSteamID, Dictionary<String, bool>> playerData = new Dictionary<CSteamID, Dictionary<string, bool>>();
+        Dictionary<CSteamID, Dictionary<String, object>> playerData = new Dictionary<CSteamID, Dictionary<string, object>>();
 
         public void onPlayerConnected(UnturnedPlayer player) {
             if (playerData.ContainsKey(player.CSteamID))
                 playerData.Remove(player.CSteamID);
-            playerData.Add(player.CSteamID, new Dictionary<string, bool>());
+            playerData.Add(player.CSteamID, new Dictionary<string, object>());
         }
 
         public void onPlayerDisconnected(UnturnedPlayer player) {
@@ -19,10 +19,10 @@ namespace AlskeboUnturnedPlugin {
                 playerData.Remove(player.CSteamID);
         }
 
-        public void setPlayerData(UnturnedPlayer player, String data, bool value) {
-            Dictionary<string, bool> dict = playerData[player.CSteamID];
+        public void setPlayerData(UnturnedPlayer player, String data, object value) {
+            Dictionary<string, object> dict = playerData[player.CSteamID];
             if (dict == null)
-                dict = new Dictionary<string, bool>();
+                dict = new Dictionary<string, object>();
             if (dict.ContainsKey(data))
                 dict[data] = value;
             else
@@ -30,11 +30,25 @@ namespace AlskeboUnturnedPlugin {
             playerData[player.CSteamID] = dict;
         }
 
-        public bool getPlayerData(UnturnedPlayer player, String data) {
-            Dictionary<string, bool> dict = playerData[player.CSteamID];
+        public object getPlayerData(UnturnedPlayer player, String data) {
+            Dictionary<string, object> dict = playerData[player.CSteamID];
+            if (dict == null || !dict.ContainsKey(data))
+                return null;
+            return dict[data];
+        }
+
+        public bool getPlayerBoolean(UnturnedPlayer player, String data) {
+            Dictionary<string, object> dict = playerData[player.CSteamID];
             if (dict == null || !dict.ContainsKey(data))
                 return false;
-            return dict[data];
+            return (bool)dict[data];
+        }
+
+        public int getPlayerInt(UnturnedPlayer player, String data) {
+            Dictionary<string, object> dict = playerData[player.CSteamID];
+            if (dict == null || !dict.ContainsKey(data))
+                return 0;
+            return (int)dict[data];
         }
     }
 }

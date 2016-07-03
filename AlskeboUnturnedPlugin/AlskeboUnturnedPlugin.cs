@@ -72,16 +72,22 @@ namespace AlskeboUnturnedPlugin {
 
         private void onPlayerConnected(UnturnedPlayer player) {
             UnturnedChat.Say(player.DisplayName + " has connected.");
+
+            playerManager.onPlayerConnected(player);
+
             new Thread(delegate () {
                 if (!databaseManager.playerExists(player.CSteamID))
                     databaseManager.insertPlayer(player.CSteamID, player.DisplayName, false);
-                databaseManager.setPlayerLastJoin(player.CSteamID);
-                if (!AlskeboUnturnedPlugin.databaseManager.playerHasReceivedVehicle(player.CSteamID)) {
+                else
+                    databaseManager.setPlayerLastJoin(player.CSteamID);
+
+                DatabasePlayer dbp = AlskeboUnturnedPlugin.databaseManager.receivePlayer(player.CSteamID);
+                playerManager.setPlayerData(player, "balance", dbp.balance);
+                playerManager.setPlayerData(player, "receivedvehicle", dbp.receivedVehicle);
+                if (!dbp.receivedVehicle)
                     UnturnedChat.Say(player, "Receive your one-time free personal car with \"/firstvehicle\"!");
-                }
             }).Start();
 
-            playerManager.onPlayerConnected(player);
             vehicleManager.onPlayerConnected(player);
         }
 
@@ -93,7 +99,7 @@ namespace AlskeboUnturnedPlugin {
 
         private void onPlayerUpdateGesture(UnturnedPlayer player, Rocket.Unturned.Events.UnturnedPlayerEvents.PlayerGesture gesture) {
             if (gesture == Rocket.Unturned.Events.UnturnedPlayerEvents.PlayerGesture.PunchLeft || gesture == Rocket.Unturned.Events.UnturnedPlayerEvents.PlayerGesture.PunchRight) {
-                if (playerManager.getPlayerData(player, "structureinfo")) {
+                if (playerManager.getPlayerBoolean(player, "structureinfo")) {
                     List<RegionCoordinate> regions = new List<RegionCoordinate>();
                     Regions.getRegionsInRadius(player.Position, 20, regions);
                     List<Transform> structures = new List<Transform>();
@@ -124,7 +130,7 @@ namespace AlskeboUnturnedPlugin {
                         }
                     } else
                         UnturnedChat.Say(player, "Could not find any close structures.");
-                } else if (playerManager.getPlayerData(player, "barricadeinfo")) {
+                } else if (playerManager.getPlayerBoolean(player, "barricadeinfo")) {
                     List<RegionCoordinate> regions = new List<RegionCoordinate>();
                     Regions.getRegionsInRadius(player.Position, 20, regions);
                     List<Transform> barricades = new List<Transform>();

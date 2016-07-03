@@ -29,6 +29,9 @@ namespace AlskeboUnturnedPlugin {
             messages.Add("Natural vehicles can't be locked. You can drive them all!");
             messages.Add("You can only lock your own vehicles.");
             messages.Add("You can view your owned vehicles with \"/myvehicles\".");
+            messages.Add("When you find money items you can deposit them with \"/depositmoney\".");
+            messages.Add("To check your balance, use \"/balance\".");
+            messages.Add("Several ways to spend money are being added.");
 
             timer.Start();
         }

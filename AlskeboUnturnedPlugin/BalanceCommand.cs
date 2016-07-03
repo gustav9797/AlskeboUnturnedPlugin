@@ -1,23 +1,24 @@
 ﻿using Rocket.API;
 using Rocket.Unturned.Chat;
 using Rocket.Unturned.Player;
+using SDG.Unturned;
 using System;
 using System.Collections.Generic;
 
 using System.Text;
 
 namespace AlskeboUnturnedPlugin {
-    public class BarricadeInfoCommand : IRocketCommand {
+    public class BalanceCommand : IRocketCommand {
         public AllowedCaller AllowedCaller {
             get { return AllowedCaller.Player; }
         }
 
         public string Name {
-            get { return "BarricadeInfo"; }
+            get { return "Balance"; }
         }
 
         public string Help {
-            get { return "Shows barricade info."; }
+            get { return "Shows your current balance."; }
         }
 
         public string Syntax {
@@ -30,19 +31,14 @@ namespace AlskeboUnturnedPlugin {
 
         public void Execute(IRocketPlayer caller, string[] command) {
             UnturnedPlayer player = (UnturnedPlayer)caller;
-            bool current = AlskeboUnturnedPlugin.playerManager.getPlayerBoolean(player, "barricadeinfo");
-            AlskeboUnturnedPlugin.playerManager.setPlayerData(player, "barricadeinfo", !current);
-            UnturnedChat.Say(caller, "Showing barricade info: " + ((!current).ToString().ToLower()));
-            if (!current) {
-                UnturnedChat.Say(caller, "Punch near your barricades to show their health.");
-                AlskeboUnturnedPlugin.playerManager.setPlayerData(player, "structureinfo", false);
-            }
+            int current = AlskeboUnturnedPlugin.playerManager.getPlayerInt(player, "balance");
+            UnturnedChat.Say(player, "Balance: $" + current);
         }
 
         public List<string> Permissions {
             get {
                 List<String> list = new List<string>();
-                list.Add("a.barricadeinfo");
+                list.Add("a.balance");
                 return list;
             }
         }
