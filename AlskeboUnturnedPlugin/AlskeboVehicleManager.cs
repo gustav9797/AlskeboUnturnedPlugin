@@ -114,6 +114,8 @@ namespace AlskeboUnturnedPlugin {
                 vehicle.tellLocked(new CSteamID(dbv.ownerSteamId), new CSteamID(dbv.groupSteamId), dbv.locked);
 
                 storeOwnedVehicle(new CSteamID(dbv.ownerSteamId), new CSteamID(dbv.groupSteamId), vehicle, dbv.id);
+
+                checkVehicleDestroy(vehicleOwners[vehicle.instanceID], vehicle);
             }
 
             if (!removed)
@@ -182,18 +184,12 @@ namespace AlskeboUnturnedPlugin {
             if (vehicle != null) {
                 VehicleInfo info = getOwnedVehicleInfo(vehicle.instanceID);
                 if (info != null) {
-                    if (info.ownerId.m_SteamID == 0 && vehicle.isEmpty && vehicle.fuel <= 10) {
-                        if (!vehiclesToBeDestroyed.ContainsKey(vehicle.instanceID)) {
-                            DestroyingVehicleInfo destroyingInfo = new DestroyingVehicleInfo();
-                            destroyingInfo.vehicle = vehicle;
-                            destroyingInfo.lastActivity = DateTime.Now;
-                            vehiclesToBeDestroyed.Add(vehicle.instanceID, destroyingInfo);
-                        }
-                    }
+                    checkVehicleDestroy(info, vehicle);
 
                     if (!lastSave.ContainsKey(vehicle.instanceID) || !isSimilar(vehicle, lastSave[vehicle.instanceID])) {
                         DatabaseVehicle dbv = DatabaseVehicle.fromInteractableVehicle(info.databaseId, info.ownerId.m_SteamID, info.groupId.m_SteamID, vehicle);
                         AlskeboUnturnedPlugin.databaseManager.updateVehicle(dbv);
+                        AlskeboUnturnedPlugin.databaseManager.setVehicleLastActivity(dbv.id);
                         if (lastSave.ContainsKey(vehicle.instanceID))
                             lastSave[vehicle.instanceID] = dbv;
                         else
@@ -227,6 +223,17 @@ namespace AlskeboUnturnedPlugin {
             }
             foreach (uint r in toRemove) {
                 vehiclesToBeDestroyed.Remove(r);
+            }
+        }
+
+        private void checkVehicleDestroy(VehicleInfo info, InteractableVehicle vehicle) {
+            if (info.ownerId.m_SteamID == 0 && vehicle.isEmpty && vehicle.fuel <= 10) {
+                if (!vehiclesToBeDestroyed.ContainsKey(vehicle.instanceID)) {
+                    DestroyingVehicleInfo destroyingInfo = new DestroyingVehicleInfo();
+                    destroyingInfo.vehicle = vehicle;
+                    destroyingInfo.lastActivity = DateTime.Now;
+                    vehiclesToBeDestroyed.Add(vehicle.instanceID, destroyingInfo);
+                }
             }
         }
 

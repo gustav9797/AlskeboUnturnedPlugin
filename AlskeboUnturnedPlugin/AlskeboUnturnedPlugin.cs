@@ -75,6 +75,7 @@ namespace AlskeboUnturnedPlugin {
             new Thread(delegate () {
                 if (!databaseManager.playerExists(player.CSteamID))
                     databaseManager.insertPlayer(player.CSteamID, player.DisplayName, false);
+                databaseManager.setPlayerLastJoin(player.CSteamID);
                 if (!AlskeboUnturnedPlugin.databaseManager.playerHasReceivedVehicle(player.CSteamID)) {
                     UnturnedChat.Say(player, "Receive your one-time free personal car with \"/firstvehicle\"!");
                 }

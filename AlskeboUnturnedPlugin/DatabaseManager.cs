@@ -238,5 +238,31 @@ namespace AlskeboUnturnedPlugin {
             }
             return null;
         }
+
+        public void setPlayerLastJoin(CSteamID id) {
+            try {
+                MySqlConnection connection = createConnection();
+                MySqlCommand command = connection.CreateCommand();
+                command.CommandText = "UPDATE players SET lastjoin = now() WHERE steamid = '" + id.m_SteamID + "';";
+                connection.Open();
+                command.ExecuteNonQuery();
+                connection.Close();
+            } catch (Exception e) {
+                Logger.Log(e);
+            }
+        }
+
+        public void setVehicleLastActivity(long id) {
+            try {
+                MySqlConnection connection = createConnection();
+                MySqlCommand command = connection.CreateCommand();
+                command.CommandText = "UPDATE vehicles SET lastactivity = now() WHERE id = '" + id + "';";
+                connection.Open();
+                command.ExecuteNonQuery();
+                connection.Close();
+            } catch (Exception e) {
+                Logger.Log(e);
+            }
+        }
     }
 }
