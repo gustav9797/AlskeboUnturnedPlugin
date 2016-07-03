@@ -29,7 +29,7 @@ namespace AlskeboUnturnedPlugin {
             messages.Add("You can view your owned vehicles with \"/myvehicles\".");
             messages.Add("When you find money items you can deposit them with \"/depositmoney\".");
             messages.Add("To check your balance, use \"/balance\".");
-            messages.Add("Use \"/help\" to display all help messages.");
+            messages.Add("Use \"/info\" to display all help messages.");
             messages.Add("You can only lock your own vehicles.");
 
             timer.Start();

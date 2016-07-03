@@ -10,13 +10,13 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace AlskeboUnturnedPlugin {
-    public class HelpCommand : IRocketCommand {
+    public class InfoCommand : IRocketCommand {
         public AllowedCaller AllowedCaller {
             get { return AllowedCaller.Both; }
         }
 
         public string Name {
-            get { return "help"; }
+            get { return "Info"; }
         }
 
         public string Help {
@@ -40,7 +40,7 @@ namespace AlskeboUnturnedPlugin {
         public List<string> Permissions {
             get {
                 List<String> list = new List<string>();
-                list.Add("a.help");
+                list.Add("a.info");
                 return list;
             }
         }
