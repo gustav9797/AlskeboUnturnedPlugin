@@ -202,13 +202,11 @@ namespace AlskeboUnturnedPlugin {
             List<uint> toRemove = new List<uint>();
             foreach (KeyValuePair<uint, DestroyingVehicleInfo> pair in vehiclesToBeDestroyed) {
                 if (!pair.Value.vehicle.isDead && (DateTime.Now - pair.Value.lastActivity).Minutes >= 5) {
-                    // fun stuff here!
                     InteractableVehicle vehicle = pair.Value.vehicle;
                     if (pair.Value.timesHonked >= 10) {
                         pair.Value.vehicle.askDamage(ushort.MaxValue, false);
                     } else if (!pair.Value.lastHonked) {
-                        //TODO: Fix headlights
-                        //VehicleManager.sendVehicleHeadlights(vehicle);
+                        CustomVehicleManager.sendVehicleHeadlights(vehicle);
                         EffectManager.sendEffect(vehicleDestroySounds[r.Next(vehicleDestroySounds.Count - 1)], 200, vehicle.transform.position);
                         pair.Value.lastHonked = true;
                         ++pair.Value.timesHonked;
@@ -249,7 +247,6 @@ namespace AlskeboUnturnedPlugin {
                 InteractableVehicle vehicle = VehicleManager.getVehicle(pair.Key);
 
                 if (vehicle == null || vehicle.isExploded || vehicle.isDrowned) {
-                    // The vehicle should be removed!
                     deleteOwnedVehicle(pair.Value.databaseId, pair.Value.instanceId);
                     Logger.Log("Deleted exploded/drowned/dead vehicle with ID " + pair.Value.databaseId + " and instanceID " + pair.Value.instanceId + (vehicle == null ? " (null)" : "") + ".");
                 } else if (!lastSave.ContainsKey(pair.Key) || !isSimilar(vehicle, lastSave[pair.Key])) {
@@ -430,7 +427,7 @@ namespace AlskeboUnturnedPlugin {
                 if (vehicle.isLocked != info.isLocked) {
                     if (thief != null && thief.m_SteamID != CSteamID.Nil.m_SteamID) {
                         //VehicleManager.Instance.askVehicleLock(thief);
-                        sendForceVehicleLock(vehicle, owner, group, info.isLocked);
+                        CustomVehicleManager.sendForceVehicleLock(vehicle, owner, group, info.isLocked);
                         UnturnedChat.Say(thief, "You do not have the keys for this vehicle.", vehicleManagerPrefix);
                     } else
                         vehicle.tellLocked(owner, group, info.isLocked);
@@ -438,16 +435,5 @@ namespace AlskeboUnturnedPlugin {
             } else
                 Logger.LogWarning("Could not force lock state");
         }
-
-        private void sendForceVehicleLock(InteractableVehicle vehicle, CSteamID owner, CSteamID group, bool locked) {
-            SteamChannel channel = VehicleManager.Instance.channel;
-            object[] objArray = new object[4];
-            objArray[0] = vehicle.instanceID;
-            objArray[1] = owner;
-            objArray[2] = group;
-            objArray[3] = locked;
-            channel.send("tellVehicleLock", (ESteamCall)1, (ESteamPacket)15, objArray);
-        }
-
     }
 }

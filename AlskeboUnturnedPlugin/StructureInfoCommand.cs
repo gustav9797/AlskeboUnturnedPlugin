@@ -33,8 +33,10 @@ namespace AlskeboUnturnedPlugin {
             bool current = AlskeboUnturnedPlugin.playerManager.getPlayerData(player, "structureinfo");
             AlskeboUnturnedPlugin.playerManager.setPlayerData(player, "structureinfo", !current);
             UnturnedChat.Say(caller, "Showing structure info: " + ((!current).ToString().ToLower()));
-            if (current)
+            if (!current) {
                 UnturnedChat.Say(caller, "Punch near your structures to show their health.");
+                AlskeboUnturnedPlugin.playerManager.setPlayerData(player, "barricadeinfo", false);
+            }
         }
 
         public List<string> Permissions {

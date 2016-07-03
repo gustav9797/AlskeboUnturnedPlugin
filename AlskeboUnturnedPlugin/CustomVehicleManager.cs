@@ -126,5 +126,36 @@ namespace AlskeboUnturnedPlugin {
             }
             return null;
         }
+
+        public static void sendForceVehicleLock(InteractableVehicle vehicle, CSteamID owner, CSteamID group, bool locked) {
+            SteamChannel channel = VehicleManager.Instance.channel;
+            object[] objArray = new object[4];
+            objArray[0] = vehicle.instanceID;
+            objArray[1] = owner;
+            objArray[2] = group;
+            objArray[3] = locked;
+            channel.send("tellVehicleLock", (ESteamCall)1, (ESteamPacket)15, objArray);
+        }
+
+        public static void sendVehicleHeadlights(InteractableVehicle vehicle) {
+            bool newHeadlights = !vehicle.headlightsOn;
+            vehicle.tellHeadlights(newHeadlights);
+            SteamChannel channel = VehicleManager.Instance.channel;
+            string name = "tellVehicleHeadlights";
+            object[] objArray = new object[2];
+            objArray[0] = vehicle.instanceID;
+            objArray[1] = (newHeadlights ? 1 : 0);
+            channel.send(name, (ESteamCall)1, (ESteamPacket)15, objArray);
+        }
+
+        public static void sendVehicleHeadlights(InteractableVehicle vehicle, bool on) {
+            vehicle.tellHeadlights(on);
+            SteamChannel channel = VehicleManager.Instance.channel;
+            string name = "tellVehicleHeadlights";
+            object[] objArray = new object[2];
+            objArray[0] = vehicle.instanceID;
+            objArray[1] = (on ? 1 : 0);
+            channel.send(name, (ESteamCall)1, (ESteamPacket)15, objArray);
+        }
     }
 }
