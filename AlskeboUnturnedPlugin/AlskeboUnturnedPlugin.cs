@@ -26,7 +26,7 @@ namespace AlskeboUnturnedPlugin {
         public static DatabaseManager databaseManager;
         public static AlskeboVehicleManager vehicleManager;
         public static AlskeboPlayerManager playerManager;
-        public static Advertiser advertiser;
+        public static AdvertisingManager advertiser;
         public static VehicleShop vehicleShop;
         public static System.Random r = new System.Random();
 
@@ -36,7 +36,7 @@ namespace AlskeboUnturnedPlugin {
             databaseManager = new DatabaseManager(Configuration.Instance);
             vehicleManager = new AlskeboVehicleManager();
             playerManager = new AlskeboPlayerManager();
-            advertiser = new Advertiser();
+            advertiser = new AdvertisingManager();
             vehicleShop = new VehicleShop();
             U.Events.OnPlayerConnected += onPlayerConnected;
             U.Events.OnPlayerDisconnected += onPlayerDisconnected;
@@ -74,9 +74,8 @@ namespace AlskeboUnturnedPlugin {
 
         private void onPlayerConnected(UnturnedPlayer player) {
             UnturnedChat.Say(player.DisplayName + " has connected.");
-
             playerManager.onPlayerConnected(player);
-
+            
             new Thread(delegate () {
                 if (!databaseManager.playerExists(player.CSteamID)) {
                     databaseManager.insertPlayer(player.CSteamID, player.DisplayName, false);

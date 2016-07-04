@@ -6,14 +6,14 @@ using System.Text;
 using System.Timers;
 
 namespace AlskeboUnturnedPlugin {
-    public class Advertiser {
+    public class AdvertisingManager {
         public List<string> messages = new List<string>();
         private string lastMessage = "";
         private Random r = new Random();
         private Timer timer;
         private String prefix = "[INFO]";
 
-        public Advertiser() {
+        public AdvertisingManager() {
             timer = new Timer();
             timer.Interval = 1000 * 60 * 2; // Every x minutes
             timer.Elapsed += Timer_Elapsed;
@@ -35,7 +35,7 @@ namespace AlskeboUnturnedPlugin {
             timer.Start();
         }
 
-        ~Advertiser() {
+        ~AdvertisingManager() {
             timer.Stop();
         }
 

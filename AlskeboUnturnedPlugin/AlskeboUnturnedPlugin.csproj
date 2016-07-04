@@ -75,25 +75,25 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Advertiser.cs" />
+    <Compile Include="Manager\AdvertisingManager.cs" />
     <Compile Include="AlskeboConfiguration.cs" />
-    <Compile Include="AlskeboPlayerManager.cs" />
+    <Compile Include="Manager\AlskeboPlayerManager.cs" />
     <Compile Include="AlskeboUnturnedPlugin.cs" />
-    <Compile Include="CustomVehicleManager.cs" />
-    <Compile Include="DatabaseManager.cs" />
-    <Compile Include="InfoCommand.cs" />
-    <Compile Include="DebugCommand.cs" />
-    <Compile Include="BalanceCommand.cs" />
-    <Compile Include="EnterVehicleCommand.cs" />
-    <Compile Include="DepositMoneyCommand.cs" />
-    <Compile Include="BuyVehicleCommand.cs" />
-    <Compile Include="MyVehiclesCommand.cs" />
+    <Compile Include="Manager\CustomVehicleManager.cs" />
+    <Compile Include="Manager\DatabaseManager.cs" />
+    <Compile Include="Command\InfoCommand.cs" />
+    <Compile Include="Command\DebugCommand.cs" />
+    <Compile Include="Command\BalanceCommand.cs" />
+    <Compile Include="Command\EnterVehicleCommand.cs" />
+    <Compile Include="Command\DepositMoneyCommand.cs" />
+    <Compile Include="Command\BuyVehicleCommand.cs" />
+    <Compile Include="Command\MyVehiclesCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="BarricadeInfoCommand.cs" />
-    <Compile Include="FirstVehicleCommand.cs" />
-    <Compile Include="StructureInfoCommand.cs" />
-    <Compile Include="GiveVehicleCommand.cs" />
-    <Compile Include="AlskeboVehicleManager.cs" />
+    <Compile Include="Command\BarricadeInfoCommand.cs" />
+    <Compile Include="Command\FirstVehicleCommand.cs" />
+    <Compile Include="Command\StructureInfoCommand.cs" />
+    <Compile Include="Command\GiveVehicleCommand.cs" />
+    <Compile Include="Manager\AlskeboVehicleManager.cs" />
     <Compile Include="DestroyingVehicleInfo.cs" />
     <Compile Include="VehicleInfo.cs" />
     <Compile Include="VehicleShop.cs" />
