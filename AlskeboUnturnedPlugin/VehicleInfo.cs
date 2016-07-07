@@ -12,5 +12,7 @@ namespace AlskeboUnturnedPlugin {
         public CSteamID groupId;
         public String ownerName;
         public bool isLocked;
+        public bool shouldHeadlights = false;
+        public DateTime lastHeadlights;
     }
 }

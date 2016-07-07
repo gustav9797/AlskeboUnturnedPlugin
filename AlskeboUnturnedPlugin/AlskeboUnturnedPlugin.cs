@@ -28,6 +28,7 @@ namespace AlskeboUnturnedPlugin {
         public static AlskeboPlayerManager playerManager;
         public static AdvertisingManager advertiser;
         public static VehicleShop vehicleShop;
+        public static Lottery lottery;
         public static System.Random r = new System.Random();
 
         public override void LoadPlugin() {
@@ -38,6 +39,7 @@ namespace AlskeboUnturnedPlugin {
             playerManager = new AlskeboPlayerManager();
             advertiser = new AdvertisingManager();
             vehicleShop = new VehicleShop();
+            lottery = new Lottery();
             U.Events.OnPlayerConnected += onPlayerConnected;
             U.Events.OnPlayerDisconnected += onPlayerDisconnected;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateGesture += onPlayerUpdateGesture;
@@ -54,6 +56,9 @@ namespace AlskeboUnturnedPlugin {
                 }
             }
             wasUnloaded = false;
+
+            Level.onLevelLoaded += onLevelLoaded;
+
             Logger.LogWarning("\tAlskeboPlugin Loaded Sucessfully");
         }
 
@@ -72,10 +77,35 @@ namespace AlskeboUnturnedPlugin {
             Logger.LogWarning("\tAlskeboPlugin Unloaded");
         }
 
+        private void onLevelLoaded(int level) {
+            Level.onLevelLoaded -= onLevelLoaded;
+
+            int disabledATMs = 0;
+            for (int x = 0; x < Regions.WORLD_SIZE; ++x) {
+                for (int y = 0; y < Regions.WORLD_SIZE; ++y) {
+                    List<LevelObject> list = LevelObjects.objects[x, y];
+                    for (int i = 0; i < list.Count; ++i) {
+                        LevelObject o = list[i];
+                        if (o.asset.interactability == EObjectInteractability.DROPPER) {
+                            if (o.asset.name.Equals("ATM_0")) {
+                                Logger.Log("Disabled ATM at " + o.transform.position.ToString());
+                                InteractableObjectDropper d = o.transform.gameObject.GetComponent<InteractableObjectDropper>();
+                                UnityEngine.Transform.Destroy(d);
+                                disabledATMs++;
+                            }
+                        }
+                    }
+                }
+            }
+            if (disabledATMs < 6) {
+                throw new Exception("Not all 6 ATMs were disabled.");
+            }
+        }
+
         private void onPlayerConnected(UnturnedPlayer player) {
             UnturnedChat.Say(player.DisplayName + " has connected.");
             playerManager.onPlayerConnected(player);
-            
+
             new Thread(delegate () {
                 if (!databaseManager.playerExists(player.CSteamID)) {
                     databaseManager.insertPlayer(player.CSteamID, player.DisplayName, false);

@@ -31,6 +31,9 @@ namespace AlskeboUnturnedPlugin {
             messages.Add("To check your balance, use \"/balance\".");
             messages.Add("Use \"/info\" to display all help messages.");
             messages.Add("You can only lock your own vehicles.");
+            messages.Add("Buy a lottery ticket for a chance to some great loot! (\"/buyticket\")");
+            messages.Add("Lock your vehicles remotely. (\"/lock\")");
+            messages.Add("Unlock your vehicles remotely. (\"/lock\")");
 
             timer.Start();
         }

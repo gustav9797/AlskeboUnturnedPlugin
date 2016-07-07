@@ -254,6 +254,7 @@ namespace AlskeboUnturnedPlugin {
                 if (vehicle == null || vehicle.isExploded || vehicle.isDrowned) {
                     deleteOwnedVehicle(pair.Value.databaseId, pair.Value.instanceId);
                     Logger.Log("Deleted exploded/drowned/dead vehicle with ID " + pair.Value.databaseId + " and instanceID " + pair.Value.instanceId + (vehicle == null ? " (null)" : "") + ".");
+                    continue;
                 } else if (!lastSave.ContainsKey(pair.Key) || !isSimilar(vehicle, lastSave[pair.Key])) {
                     DatabaseVehicle dbv = DatabaseVehicle.fromInteractableVehicle(pair.Value.databaseId, pair.Value.ownerId.m_SteamID, pair.Value.groupId.m_SteamID, vehicle);
                     new Thread(delegate () {
@@ -303,6 +304,17 @@ namespace AlskeboUnturnedPlugin {
             if (playerOwnedVehicles.ContainsKey(id))
                 return playerOwnedVehicles[id];
             return new List<VehicleInfo>();
+        }
+
+        public List<VehicleInfo> getAllVehicles(CSteamID ownerId, CSteamID groupId) {
+            List<VehicleInfo> output = new List<VehicleInfo>();
+            foreach (VehicleInfo info in vehicleOwners.Values) {
+                if (ownerId != null && info.ownerId != CSteamID.Nil && info.ownerId.m_SteamID != 0 && info.ownerId.m_SteamID == ownerId.m_SteamID)
+                    output.Add(info);
+                if (groupId != null && info.groupId != CSteamID.Nil && info.groupId.m_SteamID != 0 && info.groupId.m_SteamID == groupId.m_SteamID)
+                    output.Add(info);
+            }
+            return output;
         }
 
         public VehicleInfo getOwnedVehicleInfo(uint instanceId) {
@@ -384,6 +396,12 @@ namespace AlskeboUnturnedPlugin {
                 return;
 
             if (vehicle != null) {
+
+                if (vehicleOwners.ContainsKey(vehicle.instanceID) && vehicleOwners[vehicle.instanceID].isLocked == vehicle.isLocked) {
+                    // If the states are correct nothing should be done
+                    return;
+                }
+
                 CSteamID ownerId = getVehicleOwner(vehicle);
                 CSteamID ownerGroupId = getVehicleGroup(vehicle);
                 CSteamID driverId = CSteamID.Nil;
@@ -417,28 +435,53 @@ namespace AlskeboUnturnedPlugin {
         }
 
         private void storeVehicleLocked(InteractableVehicle vehicle) {
+            storeVehicleLocked(vehicle, vehicle.isLocked);
+        }
+
+        private void storeVehicleLocked(InteractableVehicle vehicle, bool locked) {
             if (vehicleOwners.ContainsKey(vehicle.instanceID)) {
                 VehicleInfo info = vehicleOwners[vehicle.instanceID];
-                info.isLocked = vehicle.isLocked;
+                info.isLocked = locked;
                 vehicleOwners[vehicle.instanceID] = info;
 
             } else
                 Logger.LogWarning("Could not store lock state");
         }
 
-        private void forceVehicleLockState(InteractableVehicle vehicle, CSteamID owner, CSteamID group, CSteamID thief) {
+        private void forceVehicleLockState(InteractableVehicle vehicle, CSteamID ownerId, CSteamID groupId, CSteamID thief) {
             if (vehicleOwners.ContainsKey(vehicle.instanceID)) {
                 VehicleInfo info = vehicleOwners[vehicle.instanceID];
                 if (vehicle.isLocked != info.isLocked) {
                     if (thief != null && thief.m_SteamID != CSteamID.Nil.m_SteamID) {
                         //VehicleManager.Instance.askVehicleLock(thief);
-                        CustomVehicleManager.sendForceVehicleLock(vehicle, owner, group, info.isLocked);
+                        CustomVehicleManager.sendForceVehicleLock(vehicle, ownerId, groupId, info.isLocked);
                         UnturnedChat.Say(thief, "You do not have the keys for this vehicle.", vehicleManagerPrefix);
                     } else
-                        vehicle.tellLocked(owner, group, info.isLocked);
+                        vehicle.tellLocked(ownerId, groupId, info.isLocked);
                 }
             } else
                 Logger.LogWarning("Could not force lock state");
+        }
+
+        public void setOwnedVehicleLocked(InteractableVehicle vehicle, bool locked) {
+            if (vehicleOwners.ContainsKey(vehicle.instanceID)) {
+                VehicleInfo info = vehicleOwners[vehicle.instanceID];
+                storeVehicleLocked(vehicle, locked);
+                vehicle.tellLocked(info.ownerId, info.groupId, locked);
+                CustomVehicleManager.sendForceVehicleLock(vehicle, info.ownerId, info.groupId, locked);
+            } else
+                Logger.LogWarning("Could not lock non-owned vehicle");
+        }
+
+        public void setVehicleFlashHeadlights(InteractableVehicle vehicle) {
+            if (vehicleOwners.ContainsKey(vehicle.instanceID)) {
+                VehicleInfo info = vehicleOwners[vehicle.instanceID];
+                info.lastHeadlights = DateTime.Now;
+                info.shouldHeadlights = true;
+                vehicleOwners[vehicle.instanceID] = info;
+
+            } else
+                Logger.LogWarning("Could not set flash");
         }
     }
 }

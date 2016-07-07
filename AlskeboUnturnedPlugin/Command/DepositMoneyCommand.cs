@@ -60,10 +60,9 @@ namespace AlskeboUnturnedPlugin {
 
             if (totalValue > 0) {
                 player.Inventory.sendStorage();
-                int current = AlskeboUnturnedPlugin.playerManager.getPlayerInt(player, "balance");
+                int current = EconomyManager.getBalance(player);
                 current += totalValue;
-                AlskeboUnturnedPlugin.databaseManager.setPlayerBalance(player.CSteamID, current);
-                AlskeboUnturnedPlugin.playerManager.setPlayerData(player, "balance", current);
+                EconomyManager.setBalance(player, current);
                 UnturnedChat.Say(player, "$" + totalValue + " has been deposited, you now have $" + current + ".");
             } else {
                 UnturnedChat.Say(player, "You do not have any money in your inventory.");

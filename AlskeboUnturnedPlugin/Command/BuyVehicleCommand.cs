@@ -71,8 +71,8 @@ namespace AlskeboUnturnedPlugin {
                         return;
                     }
 
-                    int playerMoney = AlskeboUnturnedPlugin.playerManager.getPlayerInt(player, "balance");
-                    if (playerMoney < vehiclePrice) {
+                    int playerMoney = EconomyManager.getBalance(player);
+                    if (!EconomyManager.hasBalance(player, vehiclePrice)) {
                         UnturnedChat.Say(caller, "You do not have enough money to buy a " + vehicleName + ". It costs $" + vehiclePrice + " and you need $" + (vehiclePrice - playerMoney) + " more to buy it.");
                         return;
                     }
@@ -80,16 +80,13 @@ namespace AlskeboUnturnedPlugin {
                     if (command.Length <= 1 || !command[1].Equals("confirm")) {
                         UnturnedChat.Say(caller, "You are about to buy a " + vehicleName + " for $" + vehiclePrice + ". Confirm with \"/buyvehicle " + id + " confirm\".");
                     } else {
-                        int remainingMoney = playerMoney - vehiclePrice;
-                        AlskeboUnturnedPlugin.playerManager.setPlayerData(player, "balance", remainingMoney);
-                        AlskeboUnturnedPlugin.databaseManager.setPlayerBalance(player.CSteamID, remainingMoney);
+                        EconomyManager.setBalance(player, playerMoney - vehiclePrice);
                         AlskeboUnturnedPlugin.vehicleManager.givePlayerOwnedVehicle(player, id);
                         UnturnedChat.Say(player, "Enjoy your personal " + vehicleName + "!");
                     }
                 }
             } else {
-                UnturnedChat.Say(caller, U.Translate("command_generic_invalid_parameter"));
-                throw new WrongUsageOfCommandException(caller, this);
+                UnturnedChat.Say(player, "Usage: /buyvehicle " + Syntax);
             }
         }
 

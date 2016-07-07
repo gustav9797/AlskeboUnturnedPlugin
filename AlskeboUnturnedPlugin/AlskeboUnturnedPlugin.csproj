@@ -75,6 +75,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Command\LotteryCommand.cs" />
+    <Compile Include="Command\BuyTicketCommand.cs" />
+    <Compile Include="Command\LockCommand.cs" />
+    <Compile Include="Lottery.cs" />
     <Compile Include="Manager\AdvertisingManager.cs" />
     <Compile Include="AlskeboConfiguration.cs" />
     <Compile Include="Manager\AlskeboPlayerManager.cs" />
@@ -88,6 +92,7 @@
     <Compile Include="Command\DepositMoneyCommand.cs" />
     <Compile Include="Command\BuyVehicleCommand.cs" />
     <Compile Include="Command\MyVehiclesCommand.cs" />
+    <Compile Include="Manager\EconomyManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Command\BarricadeInfoCommand.cs" />
     <Compile Include="Command\FirstVehicleCommand.cs" />

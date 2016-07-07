@@ -10,21 +10,21 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace AlskeboUnturnedPlugin {
-    public class EnterVehicleCommand : IRocketCommand {
+    public class LotteryCommand : IRocketCommand {
         public AllowedCaller AllowedCaller {
             get { return AllowedCaller.Player; }
         }
 
         public string Name {
-            get { return "EnterVehicle"; }
+            get { return "Lottery"; }
         }
 
         public string Help {
-            get { return ""; }
+            get { return "Show info about the lottery."; }
         }
 
         public string Syntax {
-            get { return "<id>"; }
+            get { return ""; }
         }
 
         public List<string> Aliases {
@@ -33,25 +33,14 @@ namespace AlskeboUnturnedPlugin {
 
         public void Execute(IRocketPlayer caller, string[] command) {
             UnturnedPlayer player = (UnturnedPlayer)caller;
-
-            uint id = 0;
-            if (command.Length >= 1 && uint.TryParse(command[0], out id)) {
-                InteractableVehicle vehicle = VehicleManager.getVehicle(id);
-                if (vehicle != null) {
-                    player.Teleport(vehicle.transform.position, 0);
-                    VehicleManager.Instance.askEnterVehicle(player.CSteamID, id, vehicle.asset.hash, (byte)vehicle.asset.engine);
-                } else
-                    UnturnedChat.Say(caller, "Vehicle null.");
-            } else {
-                UnturnedChat.Say(caller, "Usage: /entervehicle " + Syntax);
-                throw new WrongUsageOfCommandException(caller, this);
-            }
+            TimeSpan timeToNextDraw = Lottery.timeToNextDraw();
+            UnturnedChat.Say(player, "The next lottery draw is in " + timeToNextDraw.Minutes + " minutes and " + timeToNextDraw.Seconds + " seconds. Buy a ticket with \"/buyticket\".");
         }
 
         public List<string> Permissions {
             get {
                 List<String> list = new List<string>();
-                list.Add("a.entervehicle");
+                list.Add("a.lottery");
                 return list;
             }
         }

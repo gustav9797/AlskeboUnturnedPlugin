@@ -26,13 +26,19 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public List<string> Aliases {
-            get { return new List<string>(); }
+            get {
+                List<string> a = new List<string>();
+                a.Add("Money");
+                return a;
+            }
         }
 
         public void Execute(IRocketPlayer caller, string[] command) {
             UnturnedPlayer player = (UnturnedPlayer)caller;
             int current = AlskeboUnturnedPlugin.playerManager.getPlayerInt(player, "balance");
             UnturnedChat.Say(player, "Balance: $" + current);
+            if (current <= 0)
+                UnturnedChat.Say(player, "You have no money. Use \"/depositmoney\".");
         }
 
         public List<string> Permissions {

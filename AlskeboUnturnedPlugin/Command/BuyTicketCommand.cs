@@ -10,21 +10,21 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace AlskeboUnturnedPlugin {
-    public class EnterVehicleCommand : IRocketCommand {
+    public class BuyTicketCommand : IRocketCommand {
         public AllowedCaller AllowedCaller {
             get { return AllowedCaller.Player; }
         }
 
         public string Name {
-            get { return "EnterVehicle"; }
+            get { return "BuyTicket"; }
         }
 
         public string Help {
-            get { return ""; }
+            get { return "Buy a lottery ticket."; }
         }
 
         public string Syntax {
-            get { return "<id>"; }
+            get { return "<number from 0 to 100>"; }
         }
 
         public List<string> Aliases {
@@ -34,24 +34,17 @@ namespace AlskeboUnturnedPlugin {
         public void Execute(IRocketPlayer caller, string[] command) {
             UnturnedPlayer player = (UnturnedPlayer)caller;
 
-            uint id = 0;
-            if (command.Length >= 1 && uint.TryParse(command[0], out id)) {
-                InteractableVehicle vehicle = VehicleManager.getVehicle(id);
-                if (vehicle != null) {
-                    player.Teleport(vehicle.transform.position, 0);
-                    VehicleManager.Instance.askEnterVehicle(player.CSteamID, id, vehicle.asset.hash, (byte)vehicle.asset.engine);
-                } else
-                    UnturnedChat.Say(caller, "Vehicle null.");
-            } else {
-                UnturnedChat.Say(caller, "Usage: /entervehicle " + Syntax);
-                throw new WrongUsageOfCommandException(caller, this);
-            }
+            int ticket = 0;
+            if (command.Length >= 1 && int.TryParse(command[0], out ticket) && ticket >= 0 && ticket <= 100) {
+                Lottery.onCommand(player, ticket);
+            } else
+                UnturnedChat.Say(player, "Usage: /buyticket " + Syntax);
         }
 
         public List<string> Permissions {
             get {
                 List<String> list = new List<string>();
-                list.Add("a.entervehicle");
+                list.Add("a.buyticket");
                 return list;
             }
         }
