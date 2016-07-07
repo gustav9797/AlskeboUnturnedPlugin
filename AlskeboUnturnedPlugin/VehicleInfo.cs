@@ -14,5 +14,7 @@ namespace AlskeboUnturnedPlugin {
         public bool isLocked;
         public bool shouldHeadlights = false;
         public DateTime lastHeadlights;
+
+        public bool isNatural { get { return ownerId.m_SteamID == 0; } }
     }
 }

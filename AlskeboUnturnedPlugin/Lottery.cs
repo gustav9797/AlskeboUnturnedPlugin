@@ -18,6 +18,7 @@ namespace AlskeboUnturnedPlugin {
         private static Dictionary<CSteamID, int> tickets = new Dictionary<CSteamID, int>();
         private static Dictionary<int, CSteamID> players = new Dictionary<int, CSteamID>();
         private static List<ushort> winnableItems = new List<ushort>();
+        public static int maxNumber = 50;
 
         public Lottery() {
             winnableItems.Add(297);
@@ -58,7 +59,7 @@ namespace AlskeboUnturnedPlugin {
                 }
 
                 if (players.Count > 0) {
-                    int winner = AlskeboUnturnedPlugin.r.Next(0, 101);
+                    int winner = AlskeboUnturnedPlugin.r.Next(0, maxNumber + 1);
                     UnturnedChat.Say("Winning lottery number: " + winner, color);
                     if (players.ContainsKey(winner)) {
                         UnturnedPlayer player = UnturnedPlayer.FromCSteamID(players[winner]);
@@ -70,15 +71,11 @@ namespace AlskeboUnturnedPlugin {
 
                 tickets.Clear();
                 players.Clear();
-                UnturnedChat.Say("The next lottery draw is in 20 minutes. (/buyticket)", color);
+                UnturnedChat.Say("The next lottery draw is in 30 minutes. (/buyticket)", color);
             } else if (minutesToNextDraw == 1) {
                 UnturnedChat.Say("The next lottery draw is in 1 minute. (/buyticket)", color);
-            } else if (minutesToNextDraw == 2) {
-                UnturnedChat.Say("The next lottery draw is in 2 minutes. (/buyticket)", color);
             } else if (minutesToNextDraw == 5) {
                 UnturnedChat.Say("The next lottery draw is in 5 minutes. (/buyticket)", color);
-            } else if (minutesToNextDraw == 10) {
-                UnturnedChat.Say("The next lottery draw is in 10 minutes. (/buyticket)", color);
             } else if (minutesToNextDraw == 15) {
                 UnturnedChat.Say("The next lottery draw is in 15 minutes. (/buyticket)", color);
             }
@@ -121,7 +118,7 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public static TimeSpan timeToNextDraw() {
-            return lastDraw.Add(new TimeSpan(0, 20, 0)) - DateTime.Now;
+            return lastDraw.Add(new TimeSpan(0, 30, 0)) - DateTime.Now;
         }
     }
 }

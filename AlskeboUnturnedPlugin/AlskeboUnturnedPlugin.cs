@@ -126,7 +126,6 @@ namespace AlskeboUnturnedPlugin {
         private void onPlayerDisconnected(UnturnedPlayer player) {
             playerManager.onPlayerDisconnected(player);
             vehicleManager.onPlayerDisconnected(player);
-            UnturnedChat.Say(player.DisplayName + " has disconnected.");
         }
 
         private void onPlayerUpdateGesture(UnturnedPlayer player, Rocket.Unturned.Events.UnturnedPlayerEvents.PlayerGesture gesture) {

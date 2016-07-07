@@ -25,7 +25,11 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public List<string> Aliases {
-            get { return new List<string>(); }
+            get {
+                List<string> a = new List<string>();
+                a.Add("FirstCar");
+                return a;
+            }
         }
 
         public void Execute(IRocketPlayer caller, string[] command) {

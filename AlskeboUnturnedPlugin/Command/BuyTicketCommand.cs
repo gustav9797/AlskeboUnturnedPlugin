@@ -24,7 +24,7 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public string Syntax {
-            get { return "<number from 0 to 100>"; }
+            get { return "<number from 0 to " + Lottery.maxNumber + ">"; }
         }
 
         public List<string> Aliases {
@@ -35,7 +35,7 @@ namespace AlskeboUnturnedPlugin {
             UnturnedPlayer player = (UnturnedPlayer)caller;
 
             int ticket = 0;
-            if (command.Length >= 1 && int.TryParse(command[0], out ticket) && ticket >= 0 && ticket <= 100) {
+            if (command.Length >= 1 && int.TryParse(command[0], out ticket) && ticket >= 0 && ticket <= Lottery.maxNumber) {
                 Lottery.onCommand(player, ticket);
             } else
                 UnturnedChat.Say(player, "Usage: /buyticket " + Syntax);

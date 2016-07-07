@@ -169,12 +169,14 @@ namespace AlskeboUnturnedPlugin {
             String vehicleName = getVehicleTypeName(player.CurrentVehicle.id);
             if (owner.m_SteamID != 0) {
                 VehicleInfo info = getOwnedVehicleInfo(player.CurrentVehicle.instanceID);
-                String whoNickname = (info != null ? info.ownerName : "Unknown player");
+                String ownerName = (info != null ? info.ownerName : "Unknown player");
 
                 if (player.CSteamID.Equals(owner))
                     UnturnedChat.Say(player, "Welcome back to your " + vehicleName + ", " + player.DisplayName + "!", vehicleManagerPrefix);
-                else {
-                    UnturnedChat.Say(player, "This " + vehicleName + " belongs to " + whoNickname + ".", vehicleManagerPrefix);
+                else if (info != null && info.groupId.m_SteamID != 0 && info.groupId != CSteamID.Nil && player.SteamGroupID.Equals(info.groupId)) {
+                    UnturnedChat.Say(player, "Welcome back to " + ownerName + "'s " + vehicleName + ", " + player.DisplayName + "!", vehicleManagerPrefix);
+                } else {
+                    UnturnedChat.Say(player, "This " + vehicleName + " belongs to " + ownerName + ".", vehicleManagerPrefix);
                     UnturnedChat.Say(owner, "Your " + vehicle.asset.Name + " was stolen!");
                 }
             } else
@@ -186,7 +188,8 @@ namespace AlskeboUnturnedPlugin {
             if (vehicle != null) {
                 VehicleInfo info = getOwnedVehicleInfo(vehicle.instanceID);
                 if (info != null) {
-                    checkVehicleDestroy(info, vehicle, player);
+                    if (checkVehicleDestroy(info, vehicle))
+                        UnturnedChat.Say(player, "Be careful! This vehicle will despawn in exactly 10 minutes. Abort the process by fueling it and/or entering it.");
 
                     if (!lastSave.ContainsKey(vehicle.instanceID) || !isSimilar(vehicle, lastSave[vehicle.instanceID])) {
                         DatabaseVehicle dbv = DatabaseVehicle.fromInteractableVehicle(info.databaseId, info.ownerId.m_SteamID, info.groupId.m_SteamID, vehicle);
@@ -226,17 +229,17 @@ namespace AlskeboUnturnedPlugin {
             }
         }
 
-        private void checkVehicleDestroy(VehicleInfo info, InteractableVehicle vehicle, UnturnedPlayer player = null) {
-            if (info.ownerId.m_SteamID == 0 && vehicle.isEmpty && vehicle.fuel <= 10) {
-                if (player != null)
-                    UnturnedChat.Say(player, "Be careful! This vehicle will despawn in exactly 10 minutes. Abort the process by fueling it and/or entering it.");
+        private bool checkVehicleDestroy(VehicleInfo info, InteractableVehicle vehicle) {
+            if (info.isNatural && vehicle.isEmpty && vehicle.fuel <= 10) {
                 if (!vehiclesToBeDestroyed.ContainsKey(vehicle.instanceID)) {
                     DestroyingVehicleInfo destroyingInfo = new DestroyingVehicleInfo();
                     destroyingInfo.vehicle = vehicle;
                     destroyingInfo.lastActivity = DateTime.Now;
                     vehiclesToBeDestroyed.Add(vehicle.instanceID, destroyingInfo);
                 }
+                return true;
             }
+            return false;
         }
 
         private void saveVehicles(object sender, ElapsedEventArgs e) {
