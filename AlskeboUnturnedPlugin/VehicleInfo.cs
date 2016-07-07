@@ -12,9 +12,9 @@ namespace AlskeboUnturnedPlugin {
         public CSteamID groupId;
         public String ownerName;
         public bool isLocked;
-        public bool shouldHeadlights = false;
-        public DateTime lastHeadlights;
 
         public bool isNatural { get { return ownerId.m_SteamID == 0; } }
+
+        public bool hasGroup { get { return !isNatural && groupId.m_SteamID != 0; } }
     }
 }

@@ -22,6 +22,8 @@ namespace AlskeboUnturnedPlugin {
         private Dictionary<uint, DestroyingVehicleInfo> vehiclesToBeDestroyed = new Dictionary<uint, DestroyingVehicleInfo>();
         private Dictionary<uint, DatabaseVehicle> lastSave = new Dictionary<uint, DatabaseVehicle>();
         private bool loadingVehicles = false;
+        private static int vehicleDestroyMinutes = 5;
+        private static int vehicleDestroyFuel = 10;
         public static Color vehicleManagerPrefix = Color.gray;
 
         List<ushort> vehicleDestroySounds = new List<ushort> { 19, 20, 35, 36, 37, 53, 61, 62, 63, 65, 69, 71, 72, 81, 89 };
@@ -156,8 +158,10 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public void onPlayerEnterVehicle(UnturnedPlayer player, InteractableVehicle vehicle) {
-            if (vehiclesToBeDestroyed.ContainsKey(vehicle.instanceID))
+            if (vehiclesToBeDestroyed.ContainsKey(vehicle.instanceID)) {
                 vehiclesToBeDestroyed.Remove(vehicle.instanceID);
+                UnturnedChat.Say(player, "Vehicle respawn process aborted.", vehicleManagerPrefix);
+            }
 
             if (!vehicleOwners.ContainsKey(vehicle.instanceID)) {
                 // Vehicle was spawned with /v or unturned respawned it
@@ -173,7 +177,7 @@ namespace AlskeboUnturnedPlugin {
 
                 if (player.CSteamID.Equals(owner))
                     UnturnedChat.Say(player, "Welcome back to your " + vehicleName + ", " + player.DisplayName + "!", vehicleManagerPrefix);
-                else if (info != null && info.groupId.m_SteamID != 0 && info.groupId != CSteamID.Nil && player.SteamGroupID.Equals(info.groupId)) {
+                else if (info != null && info.hasGroup && player.SteamGroupID.Equals(info.groupId)) {
                     UnturnedChat.Say(player, "Welcome back to " + ownerName + "'s " + vehicleName + ", " + player.DisplayName + "!", vehicleManagerPrefix);
                 } else {
                     UnturnedChat.Say(player, "This " + vehicleName + " belongs to " + ownerName + ".", vehicleManagerPrefix);
@@ -189,7 +193,7 @@ namespace AlskeboUnturnedPlugin {
                 VehicleInfo info = getOwnedVehicleInfo(vehicle.instanceID);
                 if (info != null) {
                     if (checkVehicleDestroy(info, vehicle))
-                        UnturnedChat.Say(player, "Be careful! This vehicle will despawn in exactly 10 minutes. Abort the process by fueling it and/or entering it.");
+                        UnturnedChat.Say(player, "Be careful! This vehicle will despawn in exactly " + vehicleDestroyMinutes + " minutes. Abort the process by fueling it and/or entering it.", vehicleManagerPrefix);
 
                     if (!lastSave.ContainsKey(vehicle.instanceID) || !isSimilar(vehicle, lastSave[vehicle.instanceID])) {
                         DatabaseVehicle dbv = DatabaseVehicle.fromInteractableVehicle(info.databaseId, info.ownerId.m_SteamID, info.groupId.m_SteamID, vehicle);
@@ -207,10 +211,11 @@ namespace AlskeboUnturnedPlugin {
         private void destroyVehicles(object sender, ElapsedEventArgs e) {
             List<uint> toRemove = new List<uint>();
             foreach (KeyValuePair<uint, DestroyingVehicleInfo> pair in vehiclesToBeDestroyed) {
-                if (!pair.Value.vehicle.isDead && (DateTime.Now - pair.Value.lastActivity).Minutes >= 5) {
+                if (!pair.Value.vehicle.isDead && (DateTime.Now - pair.Value.lastActivity).Minutes >= vehicleDestroyMinutes) {
                     InteractableVehicle vehicle = pair.Value.vehicle;
                     if (pair.Value.timesHonked >= 20) {
                         pair.Value.vehicle.askDamage(ushort.MaxValue, false);
+                        toRemove.Add(pair.Value.vehicle.instanceID);
                     } else if (!pair.Value.lastHonked) {
                         CustomVehicleManager.sendVehicleHeadlights(vehicle);
                         EffectManager.sendEffect(vehicleDestroySounds[r.Next(vehicleDestroySounds.Count - 1)], 200, vehicle.transform.position);
@@ -230,7 +235,7 @@ namespace AlskeboUnturnedPlugin {
         }
 
         private bool checkVehicleDestroy(VehicleInfo info, InteractableVehicle vehicle) {
-            if (info.isNatural && vehicle.isEmpty && vehicle.fuel <= 10) {
+            if (info.isNatural && vehicle.isEmpty && vehicle.fuel <= vehicleDestroyFuel) {
                 if (!vehiclesToBeDestroyed.ContainsKey(vehicle.instanceID)) {
                     DestroyingVehicleInfo destroyingInfo = new DestroyingVehicleInfo();
                     destroyingInfo.vehicle = vehicle;
@@ -294,13 +299,13 @@ namespace AlskeboUnturnedPlugin {
         public CSteamID getVehicleOwner(InteractableVehicle vehicle) {
             if (vehicleOwners.ContainsKey(vehicle.instanceID))
                 return vehicleOwners[vehicle.instanceID].ownerId;
-            return CSteamID.Nil;
+            return new CSteamID(0);
         }
 
         public CSteamID getVehicleGroup(InteractableVehicle vehicle) {
             if (vehicleOwners.ContainsKey(vehicle.instanceID))
                 return vehicleOwners[vehicle.instanceID].groupId;
-            return CSteamID.Nil;
+            return new CSteamID(0);
         }
 
         public List<VehicleInfo> getOwnedVehicles(CSteamID id) {
@@ -312,9 +317,9 @@ namespace AlskeboUnturnedPlugin {
         public List<VehicleInfo> getAllVehicles(CSteamID ownerId, CSteamID groupId) {
             List<VehicleInfo> output = new List<VehicleInfo>();
             foreach (VehicleInfo info in vehicleOwners.Values) {
-                if (ownerId != null && info.ownerId != CSteamID.Nil && info.ownerId.m_SteamID != 0 && info.ownerId.m_SteamID == ownerId.m_SteamID)
+                if (ownerId != null && !info.isNatural && info.ownerId.m_SteamID == ownerId.m_SteamID)
                     output.Add(info);
-                if (groupId != null && info.groupId != CSteamID.Nil && info.groupId.m_SteamID != 0 && info.groupId.m_SteamID == groupId.m_SteamID)
+                if (groupId != null && info.hasGroup && info.groupId.m_SteamID == groupId.m_SteamID)
                     output.Add(info);
             }
             return output;
@@ -398,42 +403,33 @@ namespace AlskeboUnturnedPlugin {
             if (loadingVehicles)
                 return;
 
-            if (vehicle != null) {
-
-                if (vehicleOwners.ContainsKey(vehicle.instanceID) && vehicleOwners[vehicle.instanceID].isLocked == vehicle.isLocked) {
-                    // If the states are correct nothing should be done
+            if (vehicle != null && vehicleOwners.ContainsKey(vehicle.instanceID)) {
+                VehicleInfo info = vehicleOwners[vehicle.instanceID];
+                // If the states are correct, nothing should be done
+                if (info.isLocked == vehicle.isLocked) {
                     return;
-                }
-
-                CSteamID ownerId = getVehicleOwner(vehicle);
-                CSteamID ownerGroupId = getVehicleGroup(vehicle);
-                CSteamID driverId = CSteamID.Nil;
-                if (ownerId != null && vehicle.passengers != null && vehicle.passengers.Length > 0) {
+                } else if (vehicle.passengers != null && vehicle.passengers.Length > 0) {
                     Passenger driver = vehicle.passengers[0];
-                    if (driver != null) {
-                        if (driver.player != null) {
-                            driverId = driver.player.playerID.CSteamID;
-                            if (driverId.m_SteamID == ownerId.m_SteamID) {
-                                storeVehicleLocked(vehicle);
-                                UnturnedChat.Say(driverId, "This vehicle is now " + (vehicle.isLocked ? "locked" : "unlocked") + ".", vehicleManagerPrefix);
-                                return;
-                            } else {
-                                CSteamID driverGroupId = driver.player.playerID.SteamGroupID;
-                                if (driverGroupId.m_SteamID == ownerGroupId.m_SteamID && driverGroupId.m_SteamID != 0
-                                    && ownerGroupId.m_SteamID != 0 && driverGroupId != CSteamID.Nil && ownerGroupId != CSteamID.Nil) {
-                                    storeVehicleLocked(vehicle);
-                                    UnturnedChat.Say(driverId, "This vehicle is now " + (vehicle.isLocked ? "locked" : "unlocked") + ".", vehicleManagerPrefix);
-                                    return;
-                                }
-                            }
-                            forceVehicleLockState(vehicle, ownerId, ownerGroupId, driverId);
-                            return;
+                    if (driver != null && driver.player != null) {
+                        CSteamID driverId = driver.player.playerID.CSteamID;
+                        CSteamID driverGroupId = driver.player.playerID.SteamGroupID;
+
+                        if (driverId.Equals(info.ownerId)) {
+                            storeVehicleLocked(vehicle);
+                            UnturnedChat.Say(driverId, "This vehicle is now " + (vehicle.isLocked ? "locked" : "unlocked") + ".", vehicleManagerPrefix);
+                        } else if (info.hasGroup && driverGroupId.Equals(info.groupId)) {
+                            storeVehicleLocked(vehicle);
+                            UnturnedChat.Say(driverId, "This vehicle is now " + (vehicle.isLocked ? "locked" : "unlocked") + ".", vehicleManagerPrefix);
+                        } else {
+                            CustomVehicleManager.sendForceVehicleLock(vehicle, info.ownerId, info.groupId, info.isLocked);
+                            UnturnedChat.Say(driverId, "You do not have the keys for this vehicle.", vehicleManagerPrefix);
                         }
+                        return;
                     }
                 }
-                // Player used lockpick
+
                 storeVehicleLocked(vehicle);
-                UnturnedChat.Say("A " + vehicle.asset.Name + " has been lockpicked!");
+                UnturnedChat.Say("A " + vehicle.asset.Name + " was lockpicked!");
             }
         }
 
@@ -451,21 +447,6 @@ namespace AlskeboUnturnedPlugin {
                 Logger.LogWarning("Could not store lock state");
         }
 
-        private void forceVehicleLockState(InteractableVehicle vehicle, CSteamID ownerId, CSteamID groupId, CSteamID thief) {
-            if (vehicleOwners.ContainsKey(vehicle.instanceID)) {
-                VehicleInfo info = vehicleOwners[vehicle.instanceID];
-                if (vehicle.isLocked != info.isLocked) {
-                    if (thief != null && thief.m_SteamID != CSteamID.Nil.m_SteamID) {
-                        //VehicleManager.Instance.askVehicleLock(thief);
-                        CustomVehicleManager.sendForceVehicleLock(vehicle, ownerId, groupId, info.isLocked);
-                        UnturnedChat.Say(thief, "You do not have the keys for this vehicle.", vehicleManagerPrefix);
-                    } else
-                        vehicle.tellLocked(ownerId, groupId, info.isLocked);
-                }
-            } else
-                Logger.LogWarning("Could not force lock state");
-        }
-
         public void setOwnedVehicleLocked(InteractableVehicle vehicle, bool locked) {
             if (vehicleOwners.ContainsKey(vehicle.instanceID)) {
                 VehicleInfo info = vehicleOwners[vehicle.instanceID];
@@ -474,17 +455,6 @@ namespace AlskeboUnturnedPlugin {
                 CustomVehicleManager.sendForceVehicleLock(vehicle, info.ownerId, info.groupId, locked);
             } else
                 Logger.LogWarning("Could not lock non-owned vehicle");
-        }
-
-        public void setVehicleFlashHeadlights(InteractableVehicle vehicle) {
-            if (vehicleOwners.ContainsKey(vehicle.instanceID)) {
-                VehicleInfo info = vehicleOwners[vehicle.instanceID];
-                info.lastHeadlights = DateTime.Now;
-                info.shouldHeadlights = true;
-                vehicleOwners[vehicle.instanceID] = info;
-
-            } else
-                Logger.LogWarning("Could not set flash");
         }
     }
 }
