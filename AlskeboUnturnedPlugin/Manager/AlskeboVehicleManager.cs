@@ -22,6 +22,7 @@ namespace AlskeboUnturnedPlugin {
         private Dictionary<uint, DestroyingVehicleInfo> vehiclesToBeDestroyed = new Dictionary<uint, DestroyingVehicleInfo>();
         private Dictionary<uint, DatabaseVehicle> lastSave = new Dictionary<uint, DatabaseVehicle>();
         private bool loadingVehicles = false;
+        private bool removedDefaultVehicles = false;
         private static int vehicleDestroyMinutes = 5;
         private static int vehicleDestroyFuel = 10;
         public static Color vehicleManagerPrefix = Color.gray;
@@ -57,6 +58,7 @@ namespace AlskeboUnturnedPlugin {
                 }
             }
             Level.onPrePreLevelLoaded += onLatePrePreLevelLoaded;
+            Level.onLevelLoaded += onLevelLoaded;
         }
 
         public void onPluginLoaded() {
@@ -86,7 +88,7 @@ namespace AlskeboUnturnedPlugin {
             }
 
             int defaultVehicleCount = 24;
-            bool removed = true;
+            removedDefaultVehicles = true;
             if (naturalCount >= defaultVehicleCount) {
                 Logger.Log("Removing all default vehicles (" + VehicleManager.vehicles.Count + ")...");
             start:
@@ -102,12 +104,19 @@ namespace AlskeboUnturnedPlugin {
                 CustomVehicleManager.customrespawnVehicleIndex = (ushort)0;
                 BarricadeManager.clearPlants();
             } else {
-                removed = false;
+                removedDefaultVehicles = false;
                 Logger.Log("There are (" + naturalCount + "/" + defaultVehicleCount + ") natural vehicles, not removing default vehicles.");
             }
+        }
 
+        public void onLevelLoaded(int level) {
+            Level.onLevelLoaded -= onLevelLoaded;
+            Logger.Log("Receiving owned vehicles from database...");
+            List<DatabaseVehicle> vehicles = AlskeboUnturnedPlugin.databaseManager.receiveOwnedVehicles();
+
+            Logger.Log("Spawning stored vehicles...");
             foreach (DatabaseVehicle dbv in vehicles) {
-                InteractableVehicle vehicle = CustomVehicleManager.customSpawnVehicle(dbv.type, new Vector3(dbv.x, dbv.y, dbv.z), new Quaternion(dbv.rx, dbv.ry, dbv.rz, dbv.rw));
+                InteractableVehicle vehicle = CustomVehicleManager.customSpawnVehicle(dbv.type, new Vector3(dbv.x, dbv.y + 1.0f, dbv.z), new Quaternion(dbv.rx, dbv.ry, dbv.rz, dbv.rw));
 
                 vehicle.tellFuel(dbv.fuel);
                 VehicleManager.sendVehicleFuel(vehicle, dbv.fuel);
@@ -122,7 +131,7 @@ namespace AlskeboUnturnedPlugin {
                 checkVehicleDestroy(vehicleOwners[vehicle.instanceID], vehicle);
             }
 
-            if (!removed)
+            if (!removedDefaultVehicles)
                 saveVehicles(null, null);
             Logger.Log("Done.");
             loadingVehicles = false;
