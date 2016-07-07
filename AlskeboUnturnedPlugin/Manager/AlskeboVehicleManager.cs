@@ -235,7 +235,7 @@ namespace AlskeboUnturnedPlugin {
         }
 
         private bool checkVehicleDestroy(VehicleInfo info, InteractableVehicle vehicle) {
-            if (info.isNatural && vehicle.isEmpty && vehicle.fuel <= vehicleDestroyFuel) {
+            if (info.isNatural && vehicle.isEmpty && getFuelPercentage(vehicle) <= vehicleDestroyFuel) {
                 if (!vehiclesToBeDestroyed.ContainsKey(vehicle.instanceID)) {
                     DestroyingVehicleInfo destroyingInfo = new DestroyingVehicleInfo();
                     destroyingInfo.vehicle = vehicle;
@@ -455,6 +455,10 @@ namespace AlskeboUnturnedPlugin {
                 CustomVehicleManager.sendForceVehicleLock(vehicle, info.ownerId, info.groupId, locked);
             } else
                 Logger.LogWarning("Could not lock non-owned vehicle");
+        }
+
+        public int getFuelPercentage(InteractableVehicle vehicle) {
+            return (int)Math.Floor(((float)vehicle.fuel / (float)vehicle.asset.fuel) * 100);
         }
     }
 }
