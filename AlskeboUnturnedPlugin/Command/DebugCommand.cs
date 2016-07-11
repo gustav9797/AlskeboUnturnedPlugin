@@ -33,7 +33,9 @@ namespace AlskeboUnturnedPlugin {
 
         public void Execute(IRocketPlayer caller, string[] command) {
             UnturnedPlayer player = (UnturnedPlayer)caller;
-            Lottery.win(player);
+            //Lottery.win(player);
+            for (int i = 0; i < 50; ++i)
+                AlskeboUnturnedPlugin.vehicleManager.givePlayerOwnedVehicle(player, 121);
         }
 
         public List<string> Permissions {

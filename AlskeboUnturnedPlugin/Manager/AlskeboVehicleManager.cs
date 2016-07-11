@@ -31,7 +31,7 @@ namespace AlskeboUnturnedPlugin {
         System.Random r = new System.Random();
 
         public AlskeboVehicleManager() {
-            System.Timers.Timer timer = new System.Timers.Timer(200);
+            System.Timers.Timer timer = new System.Timers.Timer(1000);
             timer.Elapsed += destroyVehicles;
             timer.Start();
 
@@ -141,7 +141,7 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public void onServerShutdown() {
-            saveVehicles(null, null);
+            saveVehicles(null, null, true);
             /*Logger.Log("Removing owned vehicles to prevent duplicates on next server start (" + vehicleOwners.Count + "/" + VehicleManager.Vehicles.Count + ")...");
             foreach (uint instanceId in vehicleOwners.Keys) {
                 // Removes vehicle completely and destroys stuff built on it
@@ -222,7 +222,7 @@ namespace AlskeboUnturnedPlugin {
             foreach (KeyValuePair<uint, DestroyingVehicleInfo> pair in vehiclesToBeDestroyed) {
                 if (!pair.Value.vehicle.isDead && (DateTime.Now - pair.Value.lastActivity).Minutes >= vehicleDestroyMinutes) {
                     InteractableVehicle vehicle = pair.Value.vehicle;
-                    if (pair.Value.timesHonked >= 20) {
+                    if (pair.Value.timesHonked >= 10) {
                         pair.Value.vehicle.askDamage(ushort.MaxValue, false);
                         toRemove.Add(pair.Value.vehicle.instanceID);
                     } else if (!pair.Value.lastHonked) {
@@ -257,6 +257,10 @@ namespace AlskeboUnturnedPlugin {
         }
 
         private void saveVehicles(object sender, ElapsedEventArgs e) {
+            saveVehicles(sender, e, false);
+        }
+
+        private void saveVehicles(object sender, ElapsedEventArgs e, bool overrid3 = false) {
             foreach (InteractableVehicle vehicle in VehicleManager.Vehicles) {
                 if (!vehicleOwners.ContainsKey(vehicle.instanceID) && !vehicle.isExploded && !vehicle.isDrowned && !vehicle.isDead) {
                     // Vehicle was spawned with /v or unturned respawned it
@@ -271,12 +275,9 @@ namespace AlskeboUnturnedPlugin {
                 if (vehicle == null || vehicle.isExploded || vehicle.isDrowned) {
                     deleteOwnedVehicle(pair.Value.databaseId, pair.Value.instanceId);
                     Logger.Log("Deleted exploded/drowned/dead vehicle with ID " + pair.Value.databaseId + " and instanceID " + pair.Value.instanceId + (vehicle == null ? " (null)" : "") + ".");
-                    continue;
-                } else if (!lastSave.ContainsKey(pair.Key) || !isSimilar(vehicle, lastSave[pair.Key])) {
+                } else if (!lastSave.ContainsKey(pair.Key) || !isSimilar(vehicle, lastSave[pair.Key]) || overrid3) {
                     DatabaseVehicle dbv = DatabaseVehicle.fromInteractableVehicle(pair.Value.databaseId, pair.Value.ownerId.m_SteamID, pair.Value.groupId.m_SteamID, vehicle);
-                    new Thread(delegate () {
-                        AlskeboUnturnedPlugin.databaseManager.updateVehicle(dbv);
-                    }).Start();
+                    AlskeboUnturnedPlugin.databaseManager.updateVehicle(dbv);
                     if (lastSave.ContainsKey(vehicle.instanceID))
                         lastSave[vehicle.instanceID] = dbv;
                     else
@@ -366,9 +367,7 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public void deleteOwnedVehicle(long databaseId, uint instanceId) {
-            new Thread(delegate () {
-                AlskeboUnturnedPlugin.databaseManager.deleteVehicle(databaseId);
-            }).Start();
+            AlskeboUnturnedPlugin.databaseManager.deleteVehicle(databaseId);
 
             if (vehicleOwners.ContainsKey(instanceId)) {
                 VehicleInfo info = vehicleOwners[instanceId];
