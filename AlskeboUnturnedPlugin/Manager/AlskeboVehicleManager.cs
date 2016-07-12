@@ -23,15 +23,15 @@ namespace AlskeboUnturnedPlugin {
         private Dictionary<uint, DatabaseVehicle> lastSave = new Dictionary<uint, DatabaseVehicle>();
         private bool loadingVehicles = false;
         private bool removedDefaultVehicles = false;
-        private static int vehicleDestroyMinutes = 5;
-        private static int vehicleDestroyFuel = 10;
+        private static int vehicleDestroyMinutes = 0;
+        private static int vehicleDestroyFuel = 100;
         public static Color vehicleManagerPrefix = Color.gray;
 
         List<ushort> vehicleDestroySounds = new List<ushort> { 19, 20, 35, 36, 37, 53, 61, 62, 63, 65, 69, 71, 72, 81, 89 };
         System.Random r = new System.Random();
 
         public AlskeboVehicleManager() {
-            System.Timers.Timer timer = new System.Timers.Timer(1000);
+            System.Timers.Timer timer = new System.Timers.Timer(500);
             timer.Elapsed += destroyVehicles;
             timer.Start();
 
@@ -240,8 +240,9 @@ namespace AlskeboUnturnedPlugin {
                     Logger.Log("destroying");
 
                     InteractableVehicle vehicle = pair.Value.vehicle;
-                    if (pair.Value.timesHonked >= 10) {
-                        pair.Value.vehicle.askDamage(ushort.MaxValue, false);
+                    if (pair.Value.timesHonked >= 20) {
+                        pair.Value.vehicle.isExploded = true;
+                        VehicleManager.sendVehicleExploded(vehicle);
                         toRemove.Add(pair.Value.vehicle.instanceID);
                     } else if (!pair.Value.lastHonked) {
                         CustomVehicleManager.sendVehicleHeadlights(vehicle);
@@ -261,7 +262,7 @@ namespace AlskeboUnturnedPlugin {
             }
         }
 
-        private bool checkVehicleDestroy(VehicleInfo info, InteractableVehicle vehicle) {
+        public bool checkVehicleDestroy(VehicleInfo info, InteractableVehicle vehicle) {
             Logger.Log("checkVehicleDestroy");
 
             if (info.isNatural && vehicle.isEmpty && getFuelPercentage(vehicle) <= vehicleDestroyFuel) {
@@ -287,7 +288,6 @@ namespace AlskeboUnturnedPlugin {
 
             foreach (InteractableVehicle vehicle in VehicleManager.Vehicles) {
                 if (!vehicleOwners.ContainsKey(vehicle.instanceID) && !vehicle.isExploded && !vehicle.isDrowned && !vehicle.isDead) {
-                    // Vehicle was spawned with /v or unturned respawned it
                     long databaseId = storeOwnedVehicle(new CSteamID(0), new CSteamID(0), vehicle);
                     Logger.Log("Stored naturally spawned vehicle with ID " + databaseId + " and instanceID " + vehicle.instanceID + ".");
                 }
@@ -329,6 +329,13 @@ namespace AlskeboUnturnedPlugin {
             }
 
             storeOwnedVehicle(player.CSteamID, player.SteamGroupID, vehicle, -1);
+            return vehicle;
+        }
+
+        public InteractableVehicle spawnNaturalVehicle(Vector3 pos, ushort carId) {
+            Logger.Log("spawnNaturalVehicle");
+            InteractableVehicle vehicle = CustomVehicleManager.customSpawnVehicle(carId, pos, Quaternion.identity);
+            storeOwnedVehicle(new CSteamID(0), new CSteamID(0), vehicle, -1);
             return vehicle;
         }
 
