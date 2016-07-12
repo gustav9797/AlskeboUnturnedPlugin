@@ -2,9 +2,3 @@ C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin
 C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\AlskeboUnturnedPlugin.pdb
 C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\obj\Release\AlskeboUnturnedPlugin.dll
 C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\obj\Release\AlskeboUnturnedPlugin.pdb
-C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\Assembly-CSharp-firstpass.dll
-C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\Assembly-CSharp.dll
-C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\I18N.dll
-C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\I18N.West.dll
-C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\MySql.Data.dll
-C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\obj\Release\AlskeboUnturnedPlugin.csprojResolveAssemblyReference.cache

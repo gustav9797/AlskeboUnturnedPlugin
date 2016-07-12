@@ -13,7 +13,6 @@ using UnityEngine;
 using Rocket.API;
 using System.Threading;
 using Rocket.API.Extensions;
-using System.Diagnostics;
 
 namespace AlskeboUnturnedPlugin {
     public class AlskeboUnturnedPlugin : RocketPlugin<AlskeboConfiguration> {
@@ -60,14 +59,7 @@ namespace AlskeboUnturnedPlugin {
 
             Level.onLevelLoaded += onLevelLoaded;
 
-
-            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
-
             Logger.LogWarning("\tAlskeboPlugin Loaded Sucessfully");
-        }
-
-        private void CurrentDomain_ProcessExit(object sender, EventArgs e) {
-            Logger.LogWarning("SHIT PROCESS EXIT");
         }
 
         public override void UnloadPlugin(PluginState state = PluginState.Unloaded) {
@@ -83,9 +75,6 @@ namespace AlskeboUnturnedPlugin {
 
             wasUnloaded = true;
             Logger.LogWarning("\tAlskeboPlugin Unloaded");
-        }
-
-        private void OnApplicationQuit() {
         }
 
         private void onLevelLoaded(int level) {
@@ -117,17 +106,19 @@ namespace AlskeboUnturnedPlugin {
             UnturnedChat.Say(player.DisplayName + " has connected.");
             playerManager.onPlayerConnected(player);
 
-            if (!databaseManager.playerExists(player.CSteamID)) {
-                databaseManager.insertPlayer(player.CSteamID, player.DisplayName, false);
-                UnturnedChat.Say(player, "Welcome to Alskebo. Use /info to get started.");
-            } else
-                databaseManager.setPlayerLastJoin(player.CSteamID);
+            new Thread(delegate () {
+                if (!databaseManager.playerExists(player.CSteamID)) {
+                    databaseManager.insertPlayer(player.CSteamID, player.DisplayName, false);
+                    UnturnedChat.Say(player, "Welcome to Alskebo. Use /info to get started.");
+                } else
+                    databaseManager.setPlayerLastJoin(player.CSteamID);
 
-            DatabasePlayer dbp = AlskeboUnturnedPlugin.databaseManager.receivePlayer(player.CSteamID);
-            playerManager.setPlayerData(player, "balance", dbp.balance);
-            playerManager.setPlayerData(player, "receivedvehicle", dbp.receivedVehicle);
-            if (!dbp.receivedVehicle)
-                UnturnedChat.Say(player, "Receive your one-time free personal car with \"/firstvehicle\"!");
+                DatabasePlayer dbp = AlskeboUnturnedPlugin.databaseManager.receivePlayer(player.CSteamID);
+                playerManager.setPlayerData(player, "balance", dbp.balance);
+                playerManager.setPlayerData(player, "receivedvehicle", dbp.receivedVehicle);
+                if (!dbp.receivedVehicle)
+                    UnturnedChat.Say(player, "Receive your one-time free personal car with \"/firstvehicle\"!");
+            }).Start();
 
             vehicleManager.onPlayerConnected(player);
         }

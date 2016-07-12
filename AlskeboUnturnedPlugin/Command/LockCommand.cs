@@ -1,5 +1,4 @@
 ﻿using Rocket.API;
-using Rocket.Core.Utils;
 using Rocket.Unturned.Chat;
 using Rocket.Unturned.Player;
 using SDG.Unturned;
@@ -65,13 +64,14 @@ namespace AlskeboUnturnedPlugin {
 
             AlskeboUnturnedPlugin.vehicleManager.setOwnedVehicleLocked(closest, !closestInfo.isLocked);
             CustomVehicleManager.sendVehicleHeadlights(closest);
-
+            //AlskeboUnturnedPlugin.vehicleManager.setVehicleFlashHeadlights(closest);
             new Thread(delegate () {
                 Thread.Sleep(400);
-                TaskDispatcher.QueueOnMainThread(new System.Action(delegate () {
+                var mainthread = new System.Action(delegate () {
                     if (closest != null)
                         CustomVehicleManager.sendVehicleHeadlights(closest);
-                }));
+                });
+                mainthread.Invoke();
             }).Start();
             UnturnedChat.Say(player, "Your " + closest.asset.Name + " is now " + (closest.isLocked ? "locked" : "unlocked") + ".", AlskeboVehicleManager.vehicleManagerPrefix);
         }
