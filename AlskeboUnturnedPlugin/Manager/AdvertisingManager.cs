@@ -18,7 +18,7 @@ namespace AlskeboUnturnedPlugin {
             timer.Interval = 1000 * 60 * 2; // Every x minutes
             timer.Elapsed += Timer_Elapsed;
 
-            messages.Add("Natural cars respawn after some time idle with low fuel.");
+            messages.Add("Natural cars respawn after " + AlskeboVehicleManager.vehicleDestroyMinutes + " minutes idle.");
             messages.Add("Cars have 5x HP. Buildables have 2x HP.");
             messages.Add("You can view structure health with the command \"/structureinfo\".");
             messages.Add("You can view barricade health with the command \"/barricadeinfo\".");

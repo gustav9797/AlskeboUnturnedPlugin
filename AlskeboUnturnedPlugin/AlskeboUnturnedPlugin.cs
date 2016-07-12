@@ -43,7 +43,6 @@ namespace AlskeboUnturnedPlugin {
             U.Events.OnPlayerConnected += onPlayerConnected;
             U.Events.OnPlayerDisconnected += onPlayerDisconnected;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateGesture += onPlayerUpdateGesture;
-            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdatePosition += onPlayerUpdatePosition;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStance += onPlayerUpdateStance;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStat += onPlayerUpdateStat;
 
@@ -67,7 +66,6 @@ namespace AlskeboUnturnedPlugin {
             U.Events.OnPlayerConnected -= onPlayerConnected;
             U.Events.OnPlayerDisconnected -= onPlayerDisconnected;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateGesture -= onPlayerUpdateGesture;
-            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdatePosition -= onPlayerUpdatePosition;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStance -= onPlayerUpdateStance;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStat -= onPlayerUpdateStat;
 
@@ -108,7 +106,7 @@ namespace AlskeboUnturnedPlugin {
 
             new Thread(delegate () {
                 if (!databaseManager.playerExists(player.CSteamID)) {
-                    databaseManager.insertPlayer(player.CSteamID, player.DisplayName, false);
+                    databaseManager.insertPlayer(player.CSteamID, player.SteamName, false);
                     UnturnedChat.Say(player, "Welcome to Alskebo. Use /info to get started.");
                 } else
                     databaseManager.setPlayerLastJoin(player.CSteamID);
@@ -197,9 +195,6 @@ namespace AlskeboUnturnedPlugin {
             }
         }
 
-        private void onPlayerUpdatePosition(UnturnedPlayer player, UnityEngine.Vector3 position) {
-        }
-
         private void onPlayerUpdateStance(UnturnedPlayer player, byte stance) {
             if (!playerDataMap.ContainsKey(player.Id) || playerDataMap[player.Id] == null)
                 playerDataMap.Add(player.Id, new PlayerData());
@@ -210,12 +205,10 @@ namespace AlskeboUnturnedPlugin {
                 playerData.isInsideVehicle = true;
                 playerData.vehicle = player.CurrentVehicle;
                 playerDataMap[player.Id] = playerData;
-
                 vehicleManager.onPlayerEnterVehicle(player, player.CurrentVehicle);
             } else if (stance != 6 && stance != 7 && playerData.isInsideVehicle) {
                 playerData.isInsideVehicle = false;
                 playerDataMap[player.Id] = playerData;
-
                 vehicleManager.onPlayerExitVehicle(player, playerData.vehicle);
             }
         }
