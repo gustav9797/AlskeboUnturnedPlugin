@@ -257,6 +257,10 @@ namespace AlskeboUnturnedPlugin {
         }
 
         private void saveVehicles(object sender, ElapsedEventArgs e) {
+            saveVehicles();
+        }
+
+        private void saveVehicles(bool doOverride = false) {
             foreach (InteractableVehicle vehicle in VehicleManager.Vehicles) {
                 if (!vehicleOwners.ContainsKey(vehicle.instanceID) && !vehicle.isExploded && !vehicle.isDrowned && !vehicle.isDead) {
                     // Vehicle was spawned with /v or unturned respawned it
@@ -272,7 +276,7 @@ namespace AlskeboUnturnedPlugin {
                     deleteOwnedVehicle(pair.Value.databaseId, pair.Value.instanceId);
                     Logger.Log("Deleted exploded/drowned/dead vehicle with ID " + pair.Value.databaseId + " and instanceID " + pair.Value.instanceId + (vehicle == null ? " (null)" : "") + ".");
                     continue;
-                } else if (!lastSave.ContainsKey(pair.Key) || !isSimilar(vehicle, lastSave[pair.Key])) {
+                } else if (!lastSave.ContainsKey(pair.Key) || !isSimilar(vehicle, lastSave[pair.Key]) || doOverride) {
                     DatabaseVehicle dbv = DatabaseVehicle.fromInteractableVehicle(pair.Value.databaseId, pair.Value.ownerId.m_SteamID, pair.Value.groupId.m_SteamID, vehicle);
                     new Thread(delegate () {
                         AlskeboUnturnedPlugin.databaseManager.updateVehicle(dbv);

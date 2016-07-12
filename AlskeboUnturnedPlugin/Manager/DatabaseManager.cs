@@ -48,17 +48,23 @@ namespace AlskeboUnturnedPlugin {
 
     public class DatabaseManager {
         private String databaseIP;
+        private string database;
+        private string username;
+        private string password;
 
         public DatabaseManager(AlskeboConfiguration config) {
             new I18N.West.CP1250();
             databaseIP = config.databaseIP;
+            database = config.database;
+            username = config.username;
+            password = config.password;
         }
 
         private MySqlConnection createConnection() {
             MySqlConnection connection = null;
             //51.255.174.193
             try {
-                connection = new MySqlConnection(String.Format("SERVER={0};DATABASE={1};UID={2};PASSWORD={3};PORT={4};", databaseIP, "unturned", "unturned", "13421342", "3306"));
+                connection = new MySqlConnection(String.Format("SERVER={0};DATABASE={1};UID={2};PASSWORD={3};PORT={4};", databaseIP, database, username, password, "3306"));
             } catch (Exception ex) {
                 Logger.LogException(ex);
             }
@@ -86,7 +92,10 @@ namespace AlskeboUnturnedPlugin {
             try {
                 MySqlConnection connection = createConnection();
                 MySqlCommand command = connection.CreateCommand();
-                command.CommandText = "INSERT INTO players (steamid, displayname, receivedvehicle) VALUES ('" + id.m_SteamID + "','" + displayName + "','" + receivedVehicle.ToString() + "');";
+                command.CommandText = "INSERT INTO players (steamid, displayname, receivedvehicle) VALUES (@1, @2, @3);";
+                command.Parameters.AddWithValue("@1", id.m_SteamID);
+                command.Parameters.AddWithValue("@2", displayName);
+                command.Parameters.AddWithValue("@3", receivedVehicle.ToString());
                 connection.Open();
                 command.ExecuteNonQuery();
                 connection.Close();
