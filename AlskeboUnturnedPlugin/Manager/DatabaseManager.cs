@@ -71,6 +71,8 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public bool playerExists(CSteamID id) {
+            Logger.Log("playerExists");
+
             bool exists = false;
             try {
                 MySqlConnection connection = createConnection();
@@ -88,6 +90,8 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public void insertPlayer(CSteamID id, string displayName, bool receivedVehicle) {
+            Logger.Log("insertPlayer");
+
             try {
                 MySqlConnection connection = createConnection();
                 MySqlCommand command = connection.CreateCommand();
@@ -104,6 +108,8 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public DatabasePlayer receivePlayer(CSteamID id) {
+            Logger.Log("receivePlayer");
+
             DatabasePlayer output = null;
             try {
                 MySqlConnection connection = createConnection();
@@ -129,6 +135,8 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public void setPlayerReceivedVehicle(CSteamID id, bool receivedVehicle) {
+            Logger.Log("setPlayerReceivedVehicle");
+
             try {
                 MySqlConnection connection = createConnection();
                 MySqlCommand command = connection.CreateCommand();
@@ -142,6 +150,8 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public void setPlayerBalance(CSteamID id, int balance) {
+            Logger.Log("setPlayerBalance");
+
             try {
                 MySqlConnection connection = createConnection();
                 MySqlCommand command = connection.CreateCommand();
@@ -155,6 +165,8 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public long insertOwnedVehicle(CSteamID id, CSteamID group, InteractableVehicle vehicle) {
+            Logger.Log("insertOwnedVehicle");
+
             long returnId = -1;
             try {
                 MySqlConnection connection = createConnection();
@@ -184,6 +196,8 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public List<DatabaseVehicle> receiveOwnedVehicles() {
+            Logger.Log("receiveOwnedVehicles");
+
             List<DatabaseVehicle> output = new List<DatabaseVehicle>();
             try {
                 MySqlConnection connection = createConnection();
@@ -220,6 +234,8 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public void updateVehicle(DatabaseVehicle vehicle) {
+            Logger.Log("updateVehicle");
+
             try {
                 MySqlConnection connection = createConnection();
                 MySqlCommand command = connection.CreateCommand();
@@ -245,6 +261,8 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public void deleteVehicle(long id) {
+            Logger.Log("deleteVehicle");
+
             try {
                 MySqlConnection connection = createConnection();
                 MySqlCommand command = connection.CreateCommand();
@@ -259,6 +277,8 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public String getPlayerDisplayName(CSteamID id) {
+            Logger.Log("getPlayerDisplayName");
+
             try {
                 MySqlConnection connection = createConnection();
                 MySqlCommand command = connection.CreateCommand();
@@ -279,6 +299,8 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public void setPlayerLastJoin(CSteamID id) {
+            Logger.Log("setPlayerLastJoin");
+
             try {
                 MySqlConnection connection = createConnection();
                 MySqlCommand command = connection.CreateCommand();
@@ -292,6 +314,8 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public void setVehicleLastActivity(long id) {
+            Logger.Log("setVehicleLastActivity");
+
             try {
                 MySqlConnection connection = createConnection();
                 MySqlCommand command = connection.CreateCommand();

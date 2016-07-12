@@ -16,52 +16,66 @@ namespace AlskeboUnturnedPlugin {
 
         public static uint custominstanceCount {
             get {
+                Logger.Log("begin get custominstancecount");
                 Type type = typeof(VehicleManager);
                 FieldInfo info = type.GetField("instanceCount", BindingFlags.NonPublic | BindingFlags.Static);
                 uint value = (uint)info.GetValue(null);
+                Logger.Log("end get custominstancecount");
                 return value;
             }
             set {
+                Logger.Log("begin set custominstancecount");
                 Type type = typeof(VehicleManager);
                 FieldInfo info = type.GetField("instanceCount", BindingFlags.NonPublic | BindingFlags.Static);
                 info.SetValue(null, value);
+                Logger.Log("end set custominstancecount");
             }
         }
 
         public static ushort customrespawnVehicleIndex {
             get {
+                Logger.Log("begin get customrespawnVehicleIndex");
                 Type type = typeof(VehicleManager);
                 FieldInfo info = type.GetField("respawnVehicleIndex", BindingFlags.NonPublic | BindingFlags.Static);
                 ushort value = (ushort)info.GetValue(null);
+                Logger.Log("end get customrespawnVehicleIndex");
                 return value;
             }
             set {
+                Logger.Log("begin set customrespawnVehicleIndex");
                 Type type = typeof(VehicleManager);
                 FieldInfo info = type.GetField("respawnVehicleIndex", BindingFlags.NonPublic | BindingFlags.Static);
                 info.SetValue(null, value);
+                Logger.Log("end set customrespawnVehicleIndex");
             }
         }
 
         public static float customlastTick {
             get {
+                Logger.Log("begin get customlastTick");
                 Type type = typeof(VehicleManager);
                 FieldInfo info = type.GetField("lastTick", BindingFlags.NonPublic | BindingFlags.Static);
                 float value = (float)info.GetValue(null);
+                Logger.Log("end get customlastTick");
                 return value;
             }
         }
 
         public static uint customseq {
             get {
+                Logger.Log("begin get customseq");
                 Type type = typeof(VehicleManager);
                 FieldInfo info = type.GetField("seq", BindingFlags.NonPublic | BindingFlags.Instance);
                 uint value = (uint)info.GetValue(VehicleManager.Instance);
+                Logger.Log("end get customseq");
                 return value;
             }
             set {
+                Logger.Log("begin set customseq");
                 Type type = typeof(VehicleManager);
                 FieldInfo info = type.GetField("seq", BindingFlags.NonPublic | BindingFlags.Instance);
                 info.SetValue(CustomVehicleManager.customInstance, value);
+                Logger.Log("end set customseq");
             }
         }
 
