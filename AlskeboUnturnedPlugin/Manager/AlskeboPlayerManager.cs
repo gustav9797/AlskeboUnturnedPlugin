@@ -12,6 +12,7 @@ namespace AlskeboUnturnedPlugin {
         CHAT,
         BUY_VEHICLE,
         PAY,
+        PAID,
         BALANCE_SET,
         DEPOSIT_MONEY,
         BUY_TICKET,

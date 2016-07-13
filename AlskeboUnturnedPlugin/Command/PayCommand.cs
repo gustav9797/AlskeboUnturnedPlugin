@@ -38,7 +38,9 @@ namespace AlskeboUnturnedPlugin {
                 if (receiver != null) {
                     if (!EconomyManager.hasBalance(sender, amount)) {
                         EconomyManager.setBalance(sender, EconomyManager.getBalance(sender) - amount);
+                        AlskeboUnturnedPlugin.databaseManager.logPlayerAsync(sender.CSteamID, PlayerLogType.PAY, receiver.CSteamID + "");
                         EconomyManager.addBalance(receiver, amount);
+                        AlskeboUnturnedPlugin.databaseManager.logPlayerAsync(receiver.CSteamID, PlayerLogType.PAID, sender.CSteamID + "");
                         UnturnedChat.Say(sender, "You paid $" + amount + " to " + receiver.DisplayName + ".");
                         UnturnedChat.Say(receiver, "You received $" + amount + " from " + sender.DisplayName + ".");
                     } else

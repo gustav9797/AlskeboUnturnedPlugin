@@ -41,6 +41,7 @@ namespace AlskeboUnturnedPlugin {
                 UnturnedPlayer receiver = UnturnedPlayer.FromName(command[0]);
                 if (receiver != null) {
                     EconomyManager.addBalance(receiver, amount);
+                    AlskeboUnturnedPlugin.databaseManager.logPlayerAsync(receiver.CSteamID, PlayerLogType.PAID, "ADMIN");
                     UnturnedChat.Say(sender, "[Admin] You paid $" + amount + " to " + receiver.DisplayName + ".");
                     UnturnedChat.Say(receiver, "[Admin] You received $" + amount + " from " + sender.DisplayName + ".");
                 } else
