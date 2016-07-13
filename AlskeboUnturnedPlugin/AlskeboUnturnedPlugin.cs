@@ -46,6 +46,7 @@ namespace AlskeboUnturnedPlugin {
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStance += onPlayerUpdateStance;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStat += onPlayerUpdateStat;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerChatted += onPlayerChatted;
+            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerDeath += onPlayerDeath;
 
             vehicleManager.onPluginLoaded();
 
@@ -60,6 +61,136 @@ namespace AlskeboUnturnedPlugin {
             Level.onLevelLoaded += onLevelLoaded;
 
             Logger.LogWarning("\tAlskeboPlugin Loaded Sucessfully");
+        }
+
+        private void onPlayerDeath(UnturnedPlayer player, EDeathCause cause, ELimb limb, CSteamID murderer) {
+            String limbName = "";
+            switch (limb) {
+                case ELimb.LEFT_ARM:
+                    limbName = "left arm";
+                    break;
+                case ELimb.LEFT_BACK:
+                case ELimb.LEFT_FRONT:
+                case ELimb.RIGHT_BACK:
+                case ELimb.RIGHT_FRONT:
+                case ELimb.SPINE:
+                    limbName = "torso";
+                    break;
+                case ELimb.LEFT_FOOT:
+                    limbName = "left foot";
+                    break;
+                case ELimb.LEFT_HAND:
+                    limbName = "left hand";
+                    break;
+                case ELimb.LEFT_LEG:
+                    limbName = "left leg";
+                    break;
+                case ELimb.RIGHT_ARM:
+                    limbName = "right arm";
+                    break;
+                case ELimb.RIGHT_FOOT:
+                    limbName = "right foot";
+                    break;
+                case ELimb.RIGHT_HAND:
+                    limbName = "right hand";
+                    break;
+                case ELimb.RIGHT_LEG:
+                    limbName = "right leg";
+                    break;
+                case ELimb.SKULL:
+                    limbName = "head";
+                    break;
+            }
+
+            String msg = "";
+            switch (cause) {
+                case EDeathCause.ACID:
+                    msg = "was poisoned to death";
+                    break;
+                case EDeathCause.ANIMAL:
+                    msg = "was eaten by an angry animal";
+                    break;
+                case EDeathCause.ARENA:
+                    msg = "was eaten by an arena";
+                    break;
+                case EDeathCause.BLEEDING:
+                    msg = "forgot to use a dressing";
+                    break;
+                case EDeathCause.BONES:
+                    msg = "hit the ground really hard";
+                    break;
+                case EDeathCause.BREATH:
+                    msg = "forgot how to breathe";
+                    break;
+                case EDeathCause.BURNING:
+                    msg = "went up in flames";
+                    break;
+                case EDeathCause.FOOD:
+                    msg = "didn't eat properly";
+                    break;
+                case EDeathCause.FREEZING:
+                    msg = "didn't craft a campfire in time";
+                    break;
+                case EDeathCause.INFECTION:
+                    msg = "caught a serious infection";
+                    break;
+                case EDeathCause.LANDMINE:
+                    msg = "walked on a landmine";
+                    break;
+                case EDeathCause.MISSILE:
+                    msg = "was shot by a missile";
+                    break;
+                case EDeathCause.SENTRY:
+                    msg = "was shot by a sentry";
+                    break;
+                case EDeathCause.SHRED:
+                    msg = "was shredded";
+                    break;
+                case EDeathCause.SPLASH:
+                    msg = "was spashed to death";
+                    break;
+                case EDeathCause.SUICIDE:
+                    msg = "didn't want to live anymore";
+                    break;
+                case EDeathCause.WATER:
+                    msg = "was really thirsty";
+                    break;
+                case EDeathCause.ZOMBIE:
+                    msg = "was eaten up by a zombie";
+                    break;
+                case EDeathCause.CHARGE:
+                    msg = "was blown up by a charge";
+                    break;
+                case EDeathCause.GRENADE:
+                    msg = "was blown up by a grenade";
+                    break;
+                case EDeathCause.GUN:
+                    msg = "was shot" + (limbName != "" ? " in the " + limbName : "");
+                    break;
+                case EDeathCause.KILL:
+                    msg = "was killed";
+                    break;
+                case EDeathCause.PUNCH:
+                    msg = "got punched" + (limbName != "" ? " in the " + limbName : " to death");
+                    break;
+                case EDeathCause.MELEE:
+                    msg = "was stabbed" + (limbName != "" ? " in the " + limbName : " to death");
+                    break;
+                case EDeathCause.VEHICLE:
+                case EDeathCause.ROADKILL:
+                    msg = "was run over";
+                    break;
+            }
+            if (msg == "")
+                msg = "was killed";
+
+            if (murderer != null && murderer != CSteamID.Nil && murderer != player.CSteamID) {
+                UnturnedPlayer murdererPlayer = UnturnedPlayer.FromCSteamID(murderer);
+                if (murdererPlayer != null)
+                    msg += " by " + murdererPlayer.DisplayName;
+            }
+            msg += ".";
+            UnturnedChat.Say(player.DisplayName + " " + msg, Color.red);
         }
 
         private void onPlayerChatted(UnturnedPlayer player, ref Color color, string message, EChatMode chatMode, ref bool cancel) {
