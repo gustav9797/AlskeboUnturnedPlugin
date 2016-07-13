@@ -1,4 +1,5 @@
 ﻿using Rocket.Core.Logging;
+using Rocket.Core.Utils;
 using Rocket.Unturned.Chat;
 using Rocket.Unturned.Player;
 using SDG.Unturned;
@@ -29,6 +30,7 @@ namespace AlskeboUnturnedPlugin {
         private Dictionary<uint, DatabaseVehicle> lastSave = new Dictionary<uint, DatabaseVehicle>();
         private bool loadingVehicles = false;
         private bool removedDefaultVehicles = false;
+        private bool levelLoaded = false;
         public static int vehicleDestroyMinutes = 5;
         public static Color vehicleManagerPrefix = Color.gray;
 
@@ -144,6 +146,7 @@ namespace AlskeboUnturnedPlugin {
                 saveVehicles(true);
             Logger.Log("Done.");
             loadingVehicles = false;
+            levelLoaded = true;
         }
 
         public void onPluginUnloaded() {
@@ -222,32 +225,36 @@ namespace AlskeboUnturnedPlugin {
         }
 
         private void destroyVehicles(object sender, ElapsedEventArgs e) {
-            List<uint> toRemove = new List<uint>();
-            foreach (KeyValuePair<uint, DestroyingVehicleInfo> pair in vehiclesToBeDestroyed) {
-                if (!pair.Value.vehicle.isDead && (DateTime.Now - pair.Value.lastActivity).Minutes >= vehicleDestroyMinutes) {
-                    InteractableVehicle vehicle = pair.Value.vehicle;
-                    if (pair.Value.timesHonked >= 20) {
-                        pair.Value.vehicle.isExploded = true;
-                        //VehicleManager.sendVehicleExploded(vehicle);
+            TaskDispatcher.QueueOnMainThread(new System.Action(delegate () {
+                List<uint> toRemove = new List<uint>();
+                foreach (KeyValuePair<uint, DestroyingVehicleInfo> pair in vehiclesToBeDestroyed) {
+                    if (!pair.Value.vehicle.isDead && (DateTime.Now - pair.Value.lastActivity).Minutes >= vehicleDestroyMinutes) {
+                        InteractableVehicle vehicle = pair.Value.vehicle;
+                        if (pair.Value.timesHonked >= 20) {
+                            pair.Value.vehicle.isExploded = true;
+                            //VehicleManager.sendVehicleExploded(vehicle);
+                            toRemove.Add(pair.Value.vehicle.instanceID);
+                        } else if (!pair.Value.lastHonked) {
+                            CustomVehicleManager.sendVehicleHeadlights(vehicle);
+                            EffectManager.sendEffect(vehicleDestroySounds[r.Next(vehicleDestroySounds.Count - 1)], 200, vehicle.transform.position);
+                            pair.Value.lastHonked = true;
+                            ++pair.Value.timesHonked;
+                        } else {
+                            pair.Value.lastHonked = false;
+                        }
+
+                    } else if (pair.Value.vehicle.isDead) {
                         toRemove.Add(pair.Value.vehicle.instanceID);
-                    } else if (!pair.Value.lastHonked) {
-                        CustomVehicleManager.sendVehicleHeadlights(vehicle);
-                        EffectManager.sendEffect(vehicleDestroySounds[r.Next(vehicleDestroySounds.Count - 1)], 200, vehicle.transform.position);
-                        pair.Value.lastHonked = true;
-                        ++pair.Value.timesHonked;
-                    } else {
-                        pair.Value.lastHonked = false;
                     }
-
-                } else if (pair.Value.vehicle.isDead) {
-                    toRemove.Add(pair.Value.vehicle.instanceID);
                 }
-            }
-            foreach (uint r in toRemove) {
-                vehiclesToBeDestroyed.Remove(r);
-            }
+                foreach (uint r in toRemove) {
+                    vehiclesToBeDestroyed.Remove(r);
+                }
 
-            CustomVehicleManager.spawnNaturalVehicles();
+                if (levelLoaded)
+                    CustomVehicleManager.spawnNaturalVehicles();
+
+            }));
         }
 
         public bool checkVehicleDestroy(VehicleInfo info, InteractableVehicle vehicle) {
@@ -264,7 +271,9 @@ namespace AlskeboUnturnedPlugin {
         }
 
         private void saveVehicles(object sender, ElapsedEventArgs e) {
-            saveVehicles();
+            TaskDispatcher.QueueOnMainThread(new System.Action(delegate () {
+                saveVehicles();
+            }));
         }
 
         private void saveVehicles(bool doOverride = false) {
