@@ -186,7 +186,7 @@ namespace AlskeboUnturnedPlugin {
                     UnturnedChat.Say(owner, "Your " + vehicle.asset.Name + " was stolen!");
                 }
             } else
-                UnturnedChat.Say(player, "This natural " + vehicleName + " will despawn when inactive with low fuel.", vehicleManagerPrefix);
+                UnturnedChat.Say(player, "This natural " + vehicleName + " will despawn when inactive.", vehicleManagerPrefix);
 
         }
 
@@ -195,7 +195,7 @@ namespace AlskeboUnturnedPlugin {
                 VehicleInfo info = getOwnedVehicleInfo(vehicle.instanceID);
                 if (info != null) {
                     if (checkVehicleDestroy(info, vehicle))
-                        UnturnedChat.Say(player, "Be careful! This vehicle will despawn in exactly " + vehicleDestroyMinutes + " minutes. Abort the process by fueling it and/or entering it.", vehicleManagerPrefix);
+                        UnturnedChat.Say(player, "This vehicle despawns in " + vehicleDestroyMinutes + " minutes. Abort the process by entering it.", vehicleManagerPrefix);
 
                     if (!lastSave.ContainsKey(vehicle.instanceID) || !isSimilar(vehicle, lastSave[vehicle.instanceID])) {
                         DatabaseVehicle dbv = DatabaseVehicle.fromInteractableVehicle(info.databaseId, info.ownerId.m_SteamID, info.groupId.m_SteamID, vehicle);
