@@ -66,61 +66,71 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public static InteractableVehicle customSpawnVehicle(ushort id, Vector3 point, Quaternion angle) {
-            VehicleAsset vehicleAsset = (VehicleAsset)Assets.find(EAssetType.VEHICLE, id);
-            if (vehicleAsset == null)
-                return null;
-            InteractableVehicle vehicle = customAddVehicle(id, point, angle, false, false, false, vehicleAsset.fuel, false, vehicleAsset.health, (CSteamID[])null, (byte[][])null, ++custominstanceCount);
-            VehicleManager.Instance.channel.openWrite();
-            VehicleManager.Instance.sendVehicle(VehicleManager.vehicles[VehicleManager.vehicles.Count - 1]);
-            VehicleManager.Instance.channel.closeWrite("tellVehicle", ESteamCall.OTHERS, ESteamPacket.UPDATE_RELIABLE_CHUNK_BUFFER);
-            BarricadeManager.askPlants(VehicleManager.vehicles[VehicleManager.vehicles.Count - 1].transform);
-            return vehicle;
+            VehicleAsset asset = (VehicleAsset)Assets.find(EAssetType.VEHICLE, id);
+            if (asset != null) {
+                InteractableVehicle vehicle = customAddVehicle(id, point, angle, false, false, false, asset.fuel, false, asset.health, CSteamID.Nil, CSteamID.Nil, false, null, null, ++custominstanceCount);
+                VehicleManager.Instance.channel.openWrite();
+                VehicleManager.Instance.sendVehicle(VehicleManager.vehicles[VehicleManager.vehicles.Count - 1]);
+                VehicleManager.Instance.channel.closeWrite("tellVehicle", ESteamCall.OTHERS, ESteamPacket.UPDATE_RELIABLE_CHUNK_BUFFER);
+                BarricadeManager.askPlants(VehicleManager.vehicles[VehicleManager.vehicles.Count - 1].transform);
+                return vehicle;
+            }
+            return null;
         }
 
-        private static InteractableVehicle customAddVehicle(ushort id, Vector3 point, Quaternion angle, bool sirens, bool headlights, bool taillights, ushort fuel, bool isExploded, ushort health, CSteamID[] passengers, byte[][] turrets, uint instanceID) {
-            VehicleAsset vehicleAsset = (VehicleAsset)Assets.find(EAssetType.VEHICLE, id);
-            if (vehicleAsset != null) {
-                Transform parent = !Dedicator.isDedicated || !((UnityEngine.Object)vehicleAsset.clip != (UnityEngine.Object)null) ? UnityEngine.Object.Instantiate<GameObject>(vehicleAsset.vehicle).transform : UnityEngine.Object.Instantiate<GameObject>(vehicleAsset.clip).transform;
-                parent.name = id.ToString();
-                parent.parent = LevelVehicles.models;
-                parent.position = point;
-                parent.rotation = angle;
-                parent.GetComponent<Rigidbody>().useGravity = true;
-                parent.GetComponent<Rigidbody>().isKinematic = false;
-                InteractableVehicle interactableVehicle = parent.gameObject.AddComponent<InteractableVehicle>();
-                interactableVehicle.instanceID = instanceID;
-                interactableVehicle.id = id;
-                interactableVehicle.fuel = fuel;
-                interactableVehicle.isExploded = isExploded;
-                interactableVehicle.health = health;
-                interactableVehicle.init();
-                interactableVehicle.tellSirens(sirens);
-                interactableVehicle.tellHeadlights(headlights);
-                interactableVehicle.tellTaillights(taillights);
+        private static InteractableVehicle customAddVehicle(ushort id, Vector3 point, Quaternion angle, bool sirens, bool headlights, bool taillights, ushort fuel, bool isExploded, ushort health, CSteamID owner, CSteamID group, bool locked, CSteamID[] passengers, byte[][] turrets, uint instanceID) {
+            VehicleAsset asset = (VehicleAsset)Assets.find(EAssetType.VEHICLE, id);
+            if (asset != null) {
+                Transform transform;
+                if (Dedicator.isDedicated && (asset.clip != null)) {
+                    transform = UnityEngine.Object.Instantiate<GameObject>(asset.clip).transform;
+                } else {
+                    transform = UnityEngine.Object.Instantiate<GameObject>(asset.vehicle).transform;
+                }
+                transform.name = id.ToString();
+                transform.parent = LevelVehicles.models;
+                transform.position = point;
+                transform.rotation = angle;
+                transform.GetComponent<Rigidbody>().useGravity = true;
+                transform.GetComponent<Rigidbody>().isKinematic = false;
+                InteractableVehicle item = transform.gameObject.AddComponent<InteractableVehicle>();
+                item.instanceID = instanceID;
+                item.id = id;
+                item.fuel = fuel;
+                item.isExploded = isExploded;
+                item.health = health;
+                item.init();
+                item.tellSirens(sirens);
+                item.tellHeadlights(headlights);
+                item.tellTaillights(taillights);
+                item.tellLocked(owner, group, locked);
                 if (Provider.isServer) {
                     if (turrets != null) {
-                        for (byte index = (byte)0; (int)index < interactableVehicle.turrets.Length; ++index)
-                            interactableVehicle.turrets[(int)index].state = turrets[(int)index];
+                        for (byte i = 0; i < item.turrets.Length; i = (byte)(i + 1)) {
+                            item.turrets[i].state = turrets[i];
+                        }
                     } else {
-                        for (byte index = (byte)0; (int)index < interactableVehicle.turrets.Length; ++index) {
-                            ItemAsset itemAsset = (ItemAsset)Assets.find(EAssetType.ITEM, vehicleAsset.turrets[(int)index].itemID);
-                            interactableVehicle.turrets[(int)index].state = itemAsset == null ? (byte[])null : itemAsset.getState();
+                        for (byte j = 0; j < item.turrets.Length; j = (byte)(j + 1)) {
+                            ItemAsset asset2 = (ItemAsset)Assets.find(EAssetType.ITEM, asset.turrets[j].itemID);
+                            if (asset2 != null) {
+                                item.turrets[j].state = asset2.getState();
+                            } else {
+                                item.turrets[j].state = null;
+                            }
                         }
                     }
                 }
                 if (passengers != null) {
-                    for (byte seat = (byte)0; (int)seat < passengers.Length; ++seat) {
-                        if (passengers[(int)seat] != CSteamID.Nil)
-                            interactableVehicle.addPlayer(seat, passengers[(int)seat]);
+                    for (byte k = 0; k < passengers.Length; k = (byte)(k + 1)) {
+                        if (passengers[k] != CSteamID.Nil) {
+                            item.addPlayer(k, passengers[k]);
+                        }
                     }
                 }
-                VehicleManager.vehicles.Add(interactableVehicle);
-                BarricadeManager.waterPlant(parent);
-                return interactableVehicle;
-            } else {
-                Logger.LogError("customAddVehicle: Could not find asset with id " + id);
-                if (Provider.isServer)
-                    return null;
+                VehicleManager.vehicles.Add(item);
+                BarricadeManager.waterPlant(transform);
+                return item;
+            } else if (!Provider.isServer) {
                 Provider.connectionFailureInfo = ESteamConnectionFailureInfo.VEHICLE;
                 Provider.disconnect();
             }
@@ -156,6 +166,32 @@ namespace AlskeboUnturnedPlugin {
             objArray[0] = vehicle.instanceID;
             objArray[1] = (on ? 1 : 0);
             channel.send(name, (ESteamCall)1, (ESteamPacket)15, objArray);
+        }
+
+        public static void spawnNaturalVehicles() {
+            VehicleSpawnpoint spawn = null;
+            if (AlskeboUnturnedPlugin.vehicleManager.NaturalVehicleCount < Level.vehicles) {
+                spawn = LevelVehicles.spawns[UnityEngine.Random.Range(0, LevelVehicles.spawns.Count)];
+                for (ushort i = 0; i < VehicleManager.vehicles.Count; i = (ushort)(i + 1)) {
+                    Vector3 vector2 = VehicleManager.vehicles[i].transform.position - spawn.point;
+                    if (vector2.sqrMagnitude < 64f) {
+                        return;
+                    }
+                }
+            }
+            if (spawn != null) {
+                Vector3 point = spawn.point;
+                point.y++;
+                ushort id = LevelVehicles.getVehicle(spawn);
+                if (((VehicleAsset)Assets.find(EAssetType.VEHICLE, id)) != null) {
+                    InteractableVehicle vehicle = AlskeboUnturnedPlugin.vehicleManager.spawnNaturalVehicle(point, Quaternion.Euler(0f, spawn.angle, 0f), id);
+                    vehicle.fuel = (ushort)UnityEngine.Random.Range((int)vehicle.asset.fuelMin, (int)vehicle.asset.fuelMax);
+                    vehicle.health = (ushort)UnityEngine.Random.Range((int)vehicle.asset.healthMin, (int)vehicle.asset.healthMax);
+                    VehicleManager.Instance.channel.openWrite();
+                    VehicleManager.Instance.sendVehicle(vehicle);
+                    VehicleManager.Instance.channel.closeWrite("tellVehicle", ESteamCall.OTHERS, ESteamPacket.UPDATE_RELIABLE_CHUNK_BUFFER);
+                }
+            }
         }
     }
 }

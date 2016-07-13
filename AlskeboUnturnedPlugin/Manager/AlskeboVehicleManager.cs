@@ -36,7 +36,7 @@ namespace AlskeboUnturnedPlugin {
         System.Random r = new System.Random();
 
         public AlskeboVehicleManager() {
-            System.Timers.Timer timer = new System.Timers.Timer(200);
+            System.Timers.Timer timer = new System.Timers.Timer(500);
             timer.Elapsed += destroyVehicles;
             timer.Start();
 
@@ -79,38 +79,49 @@ namespace AlskeboUnturnedPlugin {
                 Logger.Log("Could not find Vehicles.dat.");
         }
 
+        public int NaturalVehicleCount {
+            get {
+                int naturalCount = 0;
+                foreach (VehicleInfo info in vehicleOwners.Values) {
+                    if (info.isNatural)
+                        naturalCount++;
+                }
+                return naturalCount;
+            }
+        }
+
         public void onLatePrePreLevelLoaded(int level) {
             loadingVehicles = true;
             Level.onLevelLoaded -= onLatePrePreLevelLoaded;
 
             Logger.Log("Receiving owned vehicles from database...");
             List<DatabaseVehicle> vehicles = AlskeboUnturnedPlugin.databaseManager.receiveOwnedVehicles();
-            int naturalCount = 0;
+            /*int naturalCount = 0;
             foreach (DatabaseVehicle v in vehicles) {
                 if (v.ownerSteamId == 0)
                     naturalCount++;
             }
 
-            int defaultVehicleCount = 24;
+            int defaultVehicleCount = 24;*/
             removedDefaultVehicles = true;
-            if (naturalCount >= defaultVehicleCount) {
-                Logger.Log("Removing all default vehicles (" + VehicleManager.vehicles.Count + ")...");
-            start:
-                foreach (InteractableVehicle v in VehicleManager.vehicles) {
-                    if (v != null) {
-                        VehicleManager.Instance.tellVehicleDestroy(Provider.server, v.instanceID);
-                        goto start;
-                    }
+            //if (naturalCount >= defaultVehicleCount) {
+            Logger.Log("Removing all default vehicles (" + VehicleManager.vehicles.Count + ")...");
+        start:
+            foreach (InteractableVehicle v in VehicleManager.vehicles) {
+                if (v != null) {
+                    VehicleManager.Instance.tellVehicleDestroy(Provider.server, v.instanceID);
+                    goto start;
                 }
-                CustomVehicleManager.customseq = 0U;
-                VehicleManager.Vehicles = new List<InteractableVehicle>();
-                CustomVehicleManager.custominstanceCount = 0U;
-                CustomVehicleManager.customrespawnVehicleIndex = (ushort)0;
-                BarricadeManager.clearPlants();
-            } else {
+            }
+            CustomVehicleManager.customseq = 0U;
+            VehicleManager.Vehicles = new List<InteractableVehicle>();
+            CustomVehicleManager.custominstanceCount = 0U;
+            CustomVehicleManager.customrespawnVehicleIndex = (ushort)0;
+            BarricadeManager.clearPlants();
+            /*} else {
                 removedDefaultVehicles = false;
                 Logger.Log("There are (" + naturalCount + "/" + defaultVehicleCount + ") natural vehicles, not removing default vehicles.");
-            }
+            }*/
 
             Logger.Log("Spawning stored vehicles...");
             foreach (DatabaseVehicle dbv in vehicles) {
@@ -235,6 +246,8 @@ namespace AlskeboUnturnedPlugin {
             foreach (uint r in toRemove) {
                 vehiclesToBeDestroyed.Remove(r);
             }
+
+            CustomVehicleManager.spawnNaturalVehicles();
         }
 
         public bool checkVehicleDestroy(VehicleInfo info, InteractableVehicle vehicle) {
@@ -314,8 +327,13 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public InteractableVehicle spawnNaturalVehicle(Vector3 pos, ushort carId) {
-            InteractableVehicle vehicle = CustomVehicleManager.customSpawnVehicle(carId, pos, Quaternion.identity);
-            storeOwnedVehicle(new CSteamID(0), new CSteamID(0), vehicle, -1);
+            return spawnNaturalVehicle(pos, Quaternion.identity, carId);
+        }
+
+        public InteractableVehicle spawnNaturalVehicle(Vector3 pos, Quaternion angle, ushort carId) {
+            InteractableVehicle vehicle = CustomVehicleManager.customSpawnVehicle(carId, pos, angle);
+            long databaseId = storeOwnedVehicle(new CSteamID(0), new CSteamID(0), vehicle, -1);
+            Logger.Log("Spawned natural vehicle with ID " + databaseId + " and instanceID " + vehicle.instanceID + ".");
             return vehicle;
         }
 
