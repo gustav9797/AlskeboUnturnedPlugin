@@ -7,18 +7,17 @@ using SDG.Unturned;
 using Steamworks;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+
 using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Rocket.API;
-using MongoDB.Bson;
-using MongoDB.Driver;
+using System.Threading;
+using Rocket.API.Extensions;
 
 namespace AlskeboUnturnedPlugin {
-    public class AlskeboUnturnedPlugin : RocketPlugin {
+    public class AlskeboUnturnedPlugin : RocketPlugin<AlskeboConfiguration> {
         class PlayerData {
-            public bool isDriving = false;
+            public bool isInsideVehicle = false;
             public InteractableVehicle vehicle = null;
         }
 
@@ -27,20 +26,29 @@ namespace AlskeboUnturnedPlugin {
         public static DatabaseManager databaseManager;
         public static AlskeboVehicleManager vehicleManager;
         public static AlskeboPlayerManager playerManager;
-        public static Advertiser advertiser;
+        public static AdvertisingManager advertiser;
+        public static VehicleShop vehicleShop;
+        public static Lottery lottery;
         public static System.Random r = new System.Random();
 
         public override void LoadPlugin() {
             base.LoadPlugin();
-            databaseManager = new DatabaseManager();
+
+            databaseManager = new DatabaseManager(Configuration.Instance);
             vehicleManager = new AlskeboVehicleManager();
             playerManager = new AlskeboPlayerManager();
-            advertiser = new Advertiser();
+            advertiser = new AdvertisingManager();
+            vehicleShop = new VehicleShop();
+            lottery = new Lottery();
             U.Events.OnPlayerConnected += onPlayerConnected;
             U.Events.OnPlayerDisconnected += onPlayerDisconnected;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateGesture += onPlayerUpdateGesture;
-            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdatePosition += onPlayerUpdatePosition;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStance += onPlayerUpdateStance;
+            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStat += onPlayerUpdateStat;
+            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerChatted += onPlayerChatted;
+
+            vehicleManager.onPluginLoaded();
+
             if (wasUnloaded) {
                 Logger.LogWarning("\tRe-sending onPlayerConnected calls");
                 foreach (SteamPlayer player in Provider.clients) {
@@ -48,7 +56,14 @@ namespace AlskeboUnturnedPlugin {
                 }
             }
             wasUnloaded = false;
+
+            Level.onLevelLoaded += onLevelLoaded;
+
             Logger.LogWarning("\tAlskeboPlugin Loaded Sucessfully");
+        }
+
+        private void onPlayerChatted(UnturnedPlayer player, ref Color color, string message, EChatMode chatMode, ref bool cancel) {
+            databaseManager.logPlayerAsync(player.CSteamID, PlayerLogType.CHAT, message);
         }
 
         public override void UnloadPlugin(PluginState state = PluginState.Unloaded) {
@@ -56,31 +71,78 @@ namespace AlskeboUnturnedPlugin {
             U.Events.OnPlayerConnected -= onPlayerConnected;
             U.Events.OnPlayerDisconnected -= onPlayerDisconnected;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateGesture -= onPlayerUpdateGesture;
-            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdatePosition -= onPlayerUpdatePosition;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStance -= onPlayerUpdateStance;
+            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStat -= onPlayerUpdateStat;
+            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerChatted -= onPlayerChatted;
+
+            vehicleManager.onPluginUnloaded();
+
             wasUnloaded = true;
             Logger.LogWarning("\tAlskeboPlugin Unloaded");
         }
 
-        private void onPlayerConnected(UnturnedPlayer player) {
-            var filter = Builders<BsonDocument>.Filter.Eq("steamid", player.CSteamID.m_SteamID);
-            var cursor = databaseManager.getPlayersCollection().FindSync(filter);
-            if (!cursor.MoveNext()) {
-                BsonDocument document = new BsonDocument { { "steamid", player.CSteamID.m_SteamID }, { "displayname", player.DisplayName }, { "receivedvehicle", false } };
-                databaseManager.getPlayersCollection().InsertOne(document);
+        private void onLevelLoaded(int level) {
+            Level.onLevelLoaded -= onLevelLoaded;
+
+            int disabledATMs = 0;
+            for (int x = 0; x < Regions.WORLD_SIZE; ++x) {
+                for (int y = 0; y < Regions.WORLD_SIZE; ++y) {
+                    List<LevelObject> list = LevelObjects.objects[x, y];
+                    for (int i = 0; i < list.Count; ++i) {
+                        LevelObject o = list[i];
+                        if (o.asset.interactability == EObjectInteractability.DROPPER) {
+                            if (o.asset.name.Equals("ATM_0")) {
+                                Logger.Log("Disabled ATM at " + o.transform.position.ToString());
+                                InteractableObjectDropper d = o.transform.gameObject.GetComponent<InteractableObjectDropper>();
+                                UnityEngine.Transform.Destroy(d);
+                                disabledATMs++;
+                            }
+                        }
+                    }
+                }
             }
-            playerManager.onPlayerConnected(player);
+            if (disabledATMs < 6) {
+                throw new Exception("Not all 6 ATMs were disabled.");
+            }
+        }
+
+        private void onPlayerConnected(UnturnedPlayer player) {
             UnturnedChat.Say(player.DisplayName + " has connected.");
+            databaseManager.logPlayerAsync(player.CSteamID, PlayerLogType.CONNECT);
+            playerManager.onPlayerConnected(player);
+
+            new Thread(delegate () {
+                DatabasePlayer dbp;
+                if (!databaseManager.playerExists(player.CSteamID)) {
+                    databaseManager.insertPlayer(player.CSteamID, player.SteamGroupID, player.DisplayName, player.SteamName, player.CharacterName, false);
+                    dbp = AlskeboUnturnedPlugin.databaseManager.receivePlayer(player.CSteamID);
+                    UnturnedChat.Say(player, "Welcome to Alskebo. Use /info to get started.");
+                } else {
+                    databaseManager.updatePlayer(player.CSteamID, player.SteamGroupID, player.DisplayName, player.SteamName, player.CharacterName);
+                    dbp = AlskeboUnturnedPlugin.databaseManager.receivePlayer(player.CSteamID);
+                    TimeSpan timeSpan = DateTime.Now - dbp.lastJoin;
+                    UnturnedChat.Say(player, "Welcome back. Your last login was " + (timeSpan.Days >= 1 ? (timeSpan.Days + " days and ") : "") + (timeSpan.Hours >= 1 ? (timeSpan.Hours + " hours and ") : "") + timeSpan.Minutes + " minutes ago.");
+                    databaseManager.setPlayerLastJoin(player.CSteamID);
+                }
+
+                playerManager.setPlayerData(player, "balance", dbp.balance);
+                playerManager.setPlayerData(player, "receivedvehicle", dbp.receivedVehicle);
+                if (!dbp.receivedVehicle)
+                    UnturnedChat.Say(player, "Receive your one-time free personal car with \"/firstvehicle\"!");
+            }).Start();
+
+            vehicleManager.onPlayerConnected(player);
         }
 
         private void onPlayerDisconnected(UnturnedPlayer player) {
+            databaseManager.logPlayerAsync(player.CSteamID, PlayerLogType.DISCONNECT);
             playerManager.onPlayerDisconnected(player);
-            UnturnedChat.Say(player.DisplayName + " has disconnected.");
+            vehicleManager.onPlayerDisconnected(player);
         }
 
         private void onPlayerUpdateGesture(UnturnedPlayer player, Rocket.Unturned.Events.UnturnedPlayerEvents.PlayerGesture gesture) {
             if (gesture == Rocket.Unturned.Events.UnturnedPlayerEvents.PlayerGesture.PunchLeft || gesture == Rocket.Unturned.Events.UnturnedPlayerEvents.PlayerGesture.PunchRight) {
-                if (playerManager.getPlayerData(player, "structureinfo")) {
+                if (playerManager.getPlayerBoolean(player, "structureinfo")) {
                     List<RegionCoordinate> regions = new List<RegionCoordinate>();
                     Regions.getRegionsInRadius(player.Position, 20, regions);
                     List<Transform> structures = new List<Transform>();
@@ -111,7 +173,7 @@ namespace AlskeboUnturnedPlugin {
                         }
                     } else
                         UnturnedChat.Say(player, "Could not find any close structures.");
-                } else if (playerManager.getPlayerData(player, "barricadeinfo")) {
+                } else if (playerManager.getPlayerBoolean(player, "barricadeinfo")) {
                     List<RegionCoordinate> regions = new List<RegionCoordinate>();
                     Regions.getRegionsInRadius(player.Position, 20, regions);
                     List<Transform> barricades = new List<Transform>();
@@ -147,46 +209,42 @@ namespace AlskeboUnturnedPlugin {
             }
         }
 
-        private void onPlayerUpdatePosition(UnturnedPlayer player, UnityEngine.Vector3 position) {
-        }
-
         private void onPlayerUpdateStance(UnturnedPlayer player, byte stance) {
             if (!playerDataMap.ContainsKey(player.Id) || playerDataMap[player.Id] == null)
                 playerDataMap.Add(player.Id, new PlayerData());
 
             PlayerData playerData = playerDataMap[player.Id];
 
-            if (stance == 6 && !playerData.isDriving) {
-                // Player entered vehicle
-
-                playerData.isDriving = true;
+            if ((stance == 6 || stance == 7) && !playerData.isInsideVehicle) {
+                playerData.isInsideVehicle = true;
                 playerData.vehicle = player.CurrentVehicle;
                 playerDataMap[player.Id] = playerData;
-
-                if (player.CurrentVehicle != null) {
-                    CSteamID who = vehicleManager.getVehicleOwner(player.CurrentVehicle);
-                    String vehicleName = vehicleManager.getVehicleTypeName(player.CurrentVehicle.id);
-                    if (who != CSteamID.Nil) {
-                        VehicleInfo info = vehicleManager.getOwnedVehicleInfoByInstanceId(who, player.CurrentVehicle.instanceID);
-                        String whoNickname = (info != null ? info.ownerName : "Unknown player");
-
-                        if (player.CSteamID.Equals(who))
-                            UnturnedChat.Say(player, "Welcome back to your " + vehicleName + ", " + player.DisplayName + "!");
-                        else
-                            UnturnedChat.Say(player, "This " + vehicleName + " belongs to " + whoNickname + ".");
-                    } else
-                        UnturnedChat.Say(player, "This natural " + vehicleName + " will despawn when its fuel level is low.");
-
-                    vehicleManager.onPlayerEnterVehicle(player, player.CurrentVehicle);
-                }
-            } else if (stance != 6 && playerData.isDriving) {
-                // Player exited vehicle
-
-                playerData.isDriving = false;
+                vehicleManager.onPlayerEnterVehicle(player, player.CurrentVehicle);
+            } else if (stance != 6 && stance != 7 && playerData.isInsideVehicle) {
+                playerData.isInsideVehicle = false;
                 playerDataMap[player.Id] = playerData;
-
                 vehicleManager.onPlayerExitVehicle(player, playerData.vehicle);
             }
+        }
+
+        private void onPlayerUpdateStat(UnturnedPlayer player, EPlayerStat stat) {
+            if (stat == EPlayerStat.KILLS_ZOMBIES_MEGA)
+                UnturnedChat.Say("Rumours say " + player.DisplayName + " has killed a mega zombie...", Color.blue);
+        }
+
+        public static LocationNode getClosestLocation(Vector3 pos) {
+            LocationNode closest = null;
+            float closestDistance = float.MaxValue;
+            foreach (Node node in LevelNodes.Nodes) {
+                if (node.type == ENodeType.LOCATION) {
+                    float dist = Vector3.Distance(node.Position, pos);
+                    if (closest == null || dist < closestDistance) {
+                        closest = (LocationNode)node;
+                        closestDistance = dist;
+                    }
+                }
+            }
+            return closest;
         }
 
     }

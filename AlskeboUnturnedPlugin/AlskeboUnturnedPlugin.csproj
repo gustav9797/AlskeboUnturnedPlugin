@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AlskeboUnturnedPlugin</RootNamespace>
     <AssemblyName>AlskeboUnturnedPlugin</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,28 +30,28 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\lib\Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>..\lib\Assembly-CSharp-firstpass.dll</HintPath>
-    </Reference>
-    <Reference Include="MongoDB.Bson, Version=2.2.4.26, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>Libraries\MongoDB.Bson.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>lib\Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Driver, Version=2.2.4.26, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>Libraries\MongoDB.Driver.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>lib\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Driver.Core, Version=2.2.4.26, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="I18N, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>Libraries\MongoDB.Driver.Core.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>Libraries\I18N.dll</HintPath>
+    </Reference>
+    <Reference Include="I18N.West, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\I18N.West.dll</HintPath>
+    </Reference>
+    <Reference Include="MySql.Data, Version=6.9.8.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\MySql.Data.dll</HintPath>
     </Reference>
     <Reference Include="Rocket.API">
       <HintPath>..\lib\Rocket.API.dll</HintPath>
@@ -74,32 +75,43 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Advertiser.cs" />
-    <Compile Include="AlskeboPlayerManager.cs" />
+    <Compile Include="Command\LotteryCommand.cs" />
+    <Compile Include="Command\BuyTicketCommand.cs" />
+    <Compile Include="Command\LockCommand.cs" />
+    <Compile Include="Lottery.cs" />
+    <Compile Include="Manager\AdvertisingManager.cs" />
+    <Compile Include="AlskeboConfiguration.cs" />
+    <Compile Include="Manager\AlskeboPlayerManager.cs" />
     <Compile Include="AlskeboUnturnedPlugin.cs" />
-    <Compile Include="CustomVehicleManager.cs" />
-    <Compile Include="DatabaseManager.cs" />
+    <Compile Include="Manager\CustomVehicleManager.cs" />
+    <Compile Include="Manager\DatabaseManager.cs" />
+    <Compile Include="Command\InfoCommand.cs" />
+    <Compile Include="Command\DebugCommand.cs" />
+    <Compile Include="Command\BalanceCommand.cs" />
+    <Compile Include="Command\EnterVehicleCommand.cs" />
+    <Compile Include="Command\DepositMoneyCommand.cs" />
+    <Compile Include="Command\BuyVehicleCommand.cs" />
+    <Compile Include="Command\MyVehiclesCommand.cs" />
+    <Compile Include="Manager\EconomyManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="BarricadeInfoCommand.cs" />
-    <Compile Include="FirstVehicleCommand.cs" />
-    <Compile Include="StructureInfoCommand.cs" />
-    <Compile Include="GiveVehicleCommand.cs" />
-    <Compile Include="AlskeboVehicleManager.cs" />
+    <Compile Include="Command\BarricadeInfoCommand.cs" />
+    <Compile Include="Command\FirstVehicleCommand.cs" />
+    <Compile Include="Command\StructureInfoCommand.cs" />
+    <Compile Include="Command\GiveVehicleCommand.cs" />
+    <Compile Include="Manager\AlskeboVehicleManager.cs" />
     <Compile Include="DestroyingVehicleInfo.cs" />
     <Compile Include="VehicleInfo.cs" />
+    <Compile Include="VehicleShop.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Libraries\MongoDB.Bson.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Libraries\MongoDB.Driver.Core.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Libraries\MongoDB.Driver.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <Content Include="Libraries\I18N.dll" />
+    <Content Include="Libraries\I18N.West.dll" />
+    <Content Include="Libraries\MySql.Data.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy /Y "$(TargetDir)$(ProjectName).dll" "B:\steamunturned\unturned\Servers\alskebo\Rocket\Plugins\$(ProjectName).dll"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
