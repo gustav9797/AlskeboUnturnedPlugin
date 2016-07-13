@@ -273,7 +273,15 @@ namespace AlskeboUnturnedPlugin {
             Dictionary<VehicleInfo, bool> toRemove = new Dictionary<VehicleInfo, bool>();
             foreach (KeyValuePair<uint, VehicleInfo> pair in vehicleOwners) {
                 InteractableVehicle vehicle = VehicleManager.getVehicle(pair.Key);
-
+                if (vehicle != null) {
+                    if (vehicle.isExploded) {
+                        AlskeboUnturnedPlugin.databaseManager.logVehicleAsync(pair.Value.databaseId, VehicleLogType.DESTROY, "EXPLODED");
+                    } else if (vehicle.isDrowned) {
+                        AlskeboUnturnedPlugin.databaseManager.logVehicleAsync(pair.Value.databaseId, VehicleLogType.DESTROY, "DROWNED");
+                    } else if (vehicle.isDead) {
+                        AlskeboUnturnedPlugin.databaseManager.logVehicleAsync(pair.Value.databaseId, VehicleLogType.DESTROY, "DEAD");
+                    }
+                }
                 if (vehicle == null || vehicle.isExploded || vehicle.isDrowned) {
                     toRemove.Add(pair.Value, (vehicle == null));
                 } else if (!lastSave.ContainsKey(pair.Key) || !isSimilar(vehicle, lastSave[pair.Key]) || doOverride) {
