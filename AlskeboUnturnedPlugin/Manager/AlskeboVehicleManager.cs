@@ -63,7 +63,6 @@ namespace AlskeboUnturnedPlugin {
                 }
             }
             Level.onPrePreLevelLoaded += onLatePrePreLevelLoaded;
-            Level.onLevelLoaded += onLevelLoaded;
         }
 
         public void onPluginLoaded() {
@@ -112,12 +111,6 @@ namespace AlskeboUnturnedPlugin {
                 removedDefaultVehicles = false;
                 Logger.Log("There are (" + naturalCount + "/" + defaultVehicleCount + ") natural vehicles, not removing default vehicles.");
             }
-        }
-
-        public void onLevelLoaded(int level) {
-            Level.onLevelLoaded -= onLevelLoaded;
-            Logger.Log("Receiving owned vehicles from database...");
-            List<DatabaseVehicle> vehicles = AlskeboUnturnedPlugin.databaseManager.receiveOwnedVehicles();
 
             Logger.Log("Spawning stored vehicles...");
             foreach (DatabaseVehicle dbv in vehicles) {
@@ -137,7 +130,7 @@ namespace AlskeboUnturnedPlugin {
             }
 
             if (!removedDefaultVehicles)
-                saveVehicles(null, null);
+                saveVehicles(true);
             Logger.Log("Done.");
             loadingVehicles = false;
         }
