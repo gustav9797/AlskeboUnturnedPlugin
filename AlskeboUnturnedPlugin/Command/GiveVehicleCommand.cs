@@ -79,6 +79,8 @@ namespace AlskeboUnturnedPlugin {
             }
 
             InteractableVehicle vehicle = AlskeboUnturnedPlugin.vehicleManager.givePlayerOwnedVehicle(who, id);
+            VehicleInfo info = AlskeboUnturnedPlugin.vehicleManager.getOwnedVehicleInfo(vehicle);
+            AlskeboUnturnedPlugin.databaseManager.logPlayerAsync(who.CSteamID, PlayerLogType.GIVEN_VEHICLE, "ID:" + info.databaseId);
             if (vehicle == null) {
                 if (who.DisplayName != caller.DisplayName)
                     UnturnedChat.Say(caller, "Could not give target an owned vehicle.");

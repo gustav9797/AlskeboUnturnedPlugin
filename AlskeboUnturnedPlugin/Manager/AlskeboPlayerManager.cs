@@ -11,6 +11,7 @@ namespace AlskeboUnturnedPlugin {
         DISCONNECT,
         CHAT,
         BUY_VEHICLE,
+        GIVEN_VEHICLE,
         PAY,
         PAID,
         BALANCE_SET,
