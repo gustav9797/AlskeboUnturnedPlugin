@@ -85,7 +85,8 @@ namespace AlskeboUnturnedPlugin {
                         UnturnedChat.Say(caller, "You are about to buy a " + vehicleName + " for $" + vehiclePrice + ". Confirm with \"/buyvehicle " + id + " confirm\".");
                     } else {
                         EconomyManager.setBalance(player, playerMoney - vehiclePrice);
-                        AlskeboUnturnedPlugin.vehicleManager.givePlayerOwnedVehicle(player, id);
+                        VehicleInfo info = AlskeboUnturnedPlugin.vehicleManager.getOwnedVehicleInfo(AlskeboUnturnedPlugin.vehicleManager.givePlayerOwnedVehicle(player, id));
+                        AlskeboUnturnedPlugin.databaseManager.logPlayerAsync(player.CSteamID, PlayerLogType.BUY_VEHICLE, "ID:" + info.databaseId);
                         UnturnedChat.Say(player, "Enjoy your personal " + vehicleName + "!");
                     }
                 }

@@ -45,6 +45,7 @@ namespace AlskeboUnturnedPlugin {
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateGesture += onPlayerUpdateGesture;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStance += onPlayerUpdateStance;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStat += onPlayerUpdateStat;
+            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerChatted += onPlayerChatted;
 
             vehicleManager.onPluginLoaded();
 
@@ -61,6 +62,10 @@ namespace AlskeboUnturnedPlugin {
             Logger.LogWarning("\tAlskeboPlugin Loaded Sucessfully");
         }
 
+        private void onPlayerChatted(UnturnedPlayer player, ref Color color, string message, EChatMode chatMode, ref bool cancel) {
+            databaseManager.logPlayerAsync(player.CSteamID, PlayerLogType.CHAT, message);
+        }
+
         public override void UnloadPlugin(PluginState state = PluginState.Unloaded) {
             base.UnloadPlugin(state);
             U.Events.OnPlayerConnected -= onPlayerConnected;
@@ -68,6 +73,7 @@ namespace AlskeboUnturnedPlugin {
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateGesture -= onPlayerUpdateGesture;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStance -= onPlayerUpdateStance;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStat -= onPlayerUpdateStat;
+            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerChatted -= onPlayerChatted;
 
             vehicleManager.onPluginUnloaded();
 
@@ -102,16 +108,23 @@ namespace AlskeboUnturnedPlugin {
 
         private void onPlayerConnected(UnturnedPlayer player) {
             UnturnedChat.Say(player.DisplayName + " has connected.");
+            databaseManager.logPlayerAsync(player.CSteamID, PlayerLogType.CONNECT);
             playerManager.onPlayerConnected(player);
 
             new Thread(delegate () {
+                DatabasePlayer dbp;
                 if (!databaseManager.playerExists(player.CSteamID)) {
-                    databaseManager.insertPlayer(player.CSteamID, player.SteamName, false);
+                    databaseManager.insertPlayer(player.CSteamID, player.SteamGroupID, player.DisplayName, player.SteamName, player.CharacterName, false);
+                    dbp = AlskeboUnturnedPlugin.databaseManager.receivePlayer(player.CSteamID);
                     UnturnedChat.Say(player, "Welcome to Alskebo. Use /info to get started.");
-                } else
+                } else {
+                    databaseManager.updatePlayer(player.CSteamID, player.SteamGroupID, player.DisplayName, player.SteamName, player.CharacterName);
+                    dbp = AlskeboUnturnedPlugin.databaseManager.receivePlayer(player.CSteamID);
+                    TimeSpan timeSpan = DateTime.Now - dbp.lastJoin;
+                    UnturnedChat.Say(player, "Welcome back. Your last login was " + (timeSpan.Days >= 1 ? (timeSpan.Days + " days and ") : "") + (timeSpan.Hours >= 1 ? (timeSpan.Hours + " hours and ") : "") + timeSpan.Minutes + " minutes ago.");
                     databaseManager.setPlayerLastJoin(player.CSteamID);
+                }
 
-                DatabasePlayer dbp = AlskeboUnturnedPlugin.databaseManager.receivePlayer(player.CSteamID);
                 playerManager.setPlayerData(player, "balance", dbp.balance);
                 playerManager.setPlayerData(player, "receivedvehicle", dbp.receivedVehicle);
                 if (!dbp.receivedVehicle)
@@ -122,6 +135,7 @@ namespace AlskeboUnturnedPlugin {
         }
 
         private void onPlayerDisconnected(UnturnedPlayer player) {
+            databaseManager.logPlayerAsync(player.CSteamID, PlayerLogType.DISCONNECT);
             playerManager.onPlayerDisconnected(player);
             vehicleManager.onPlayerDisconnected(player);
         }

@@ -5,6 +5,19 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace AlskeboUnturnedPlugin {
+
+    public enum PlayerLogType {
+        CONNECT,
+        DISCONNECT,
+        CHAT,
+        BUY_VEHICLE,
+        PAY,
+        BALANCE_SET,
+        DEPOSIT_MONEY,
+        BUY_TICKET,
+        FIRSTVEHICLE
+    }
+
     public class AlskeboPlayerManager {
         Dictionary<CSteamID, Dictionary<String, object>> playerData = new Dictionary<CSteamID, Dictionary<string, object>>();
 

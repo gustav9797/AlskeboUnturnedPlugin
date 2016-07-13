@@ -7,6 +7,7 @@ using MySql.Data.MySqlClient;
 using Rocket.Core.Logging;
 using Steamworks;
 using SDG.Unturned;
+using System.Threading;
 
 namespace AlskeboUnturnedPlugin {
     public struct DatabaseVehicle {
@@ -41,9 +42,14 @@ namespace AlskeboUnturnedPlugin {
 
     public class DatabasePlayer {
         public ulong steamId;
+        public ulong groupSteamId;
         public string displayName;
+        public string steamName;
+        public string characterName;
         public bool receivedVehicle;
         public int balance;
+        public DateTime firstJoin;
+        public DateTime lastJoin;
     }
 
     public class DatabaseManager {
@@ -88,14 +94,17 @@ namespace AlskeboUnturnedPlugin {
             return exists;
         }
 
-        public void insertPlayer(CSteamID id, string displayName, bool receivedVehicle) {
+        public void insertPlayer(CSteamID id, CSteamID groupId, string displayName, string steamName, string characterName, bool receivedVehicle) {
             try {
                 MySqlConnection connection = createConnection();
                 MySqlCommand command = connection.CreateCommand();
-                command.CommandText = "INSERT INTO players (steamid, displayname, receivedvehicle) VALUES (@1, @2, @3);";
+                command.CommandText = "INSERT INTO players (steamid, groupsteamid, displayname, steamname, charactername, receivedvehicle) VALUES (@1, @2, @3, @4, @5, @6);";
                 command.Parameters.AddWithValue("@1", id.m_SteamID);
-                command.Parameters.AddWithValue("@2", displayName);
-                command.Parameters.AddWithValue("@3", receivedVehicle.ToString());
+                command.Parameters.AddWithValue("@2", groupId.m_SteamID);
+                command.Parameters.AddWithValue("@3", displayName);
+                command.Parameters.AddWithValue("@4", steamName);
+                command.Parameters.AddWithValue("@5", characterName);
+                command.Parameters.AddWithValue("@6", receivedVehicle.ToString());
                 connection.Open();
                 command.ExecuteNonQuery();
                 connection.Close();
@@ -116,9 +125,14 @@ namespace AlskeboUnturnedPlugin {
                     if (reader.Read()) {
                         output = new DatabasePlayer();
                         output.steamId = reader.GetUInt64("steamid");
+                        output.groupSteamId = reader.GetUInt64("groupsteamid");
                         output.displayName = reader.GetString("displayname");
+                        output.steamName = reader.GetString("steamname");
+                        output.characterName = reader.GetString("charactername");
                         output.receivedVehicle = reader.GetBoolean("receivedvehicle");
                         output.balance = reader.GetInt32("balance");
+                        output.firstJoin = reader.GetDateTime("firstjoin");
+                        output.lastJoin = reader.GetDateTime("lastjoin");
                     }
                 }
                 reader.Close();
@@ -297,6 +311,60 @@ namespace AlskeboUnturnedPlugin {
                 MySqlConnection connection = createConnection();
                 MySqlCommand command = connection.CreateCommand();
                 command.CommandText = "UPDATE vehicles SET lastactivity = now() WHERE id = '" + id + "';";
+                connection.Open();
+                command.ExecuteNonQuery();
+                connection.Close();
+            } catch (Exception e) {
+                Logger.Log(e);
+            }
+        }
+
+        public void logVehicleAsync(long databaseId, VehicleLogType logType, String data = "") {
+            new Thread(delegate () {
+                try {
+                    MySqlConnection connection = createConnection();
+                    MySqlCommand command = connection.CreateCommand();
+                    command.CommandText = "INSERT INTO vehiclelog (vehicleid, type, data) VALUES (@1, @2, @3);";
+                    command.Parameters.AddWithValue("@1", databaseId);
+                    command.Parameters.AddWithValue("@2", logType.ToString());
+                    command.Parameters.AddWithValue("@3", data);
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                    connection.Close();
+                } catch (Exception e) {
+                    Logger.Log(e);
+                }
+            }).Start();
+        }
+
+        public void logPlayerAsync(CSteamID id, PlayerLogType logType, String data = "") {
+            new Thread(delegate () {
+                try {
+                    MySqlConnection connection = createConnection();
+                    MySqlCommand command = connection.CreateCommand();
+                    command.CommandText = "INSERT INTO playerlog (steamid, type, data) VALUES (@1, @2, @3);";
+                    command.Parameters.AddWithValue("@1", id.m_SteamID);
+                    command.Parameters.AddWithValue("@2", logType.ToString());
+                    command.Parameters.AddWithValue("@3", data);
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                    connection.Close();
+                } catch (Exception e) {
+                    Logger.Log(e);
+                }
+            }).Start();
+        }
+
+        public void updatePlayer(CSteamID id, CSteamID groupId, string displayName, string steamName, string characterName) {
+            try {
+                MySqlConnection connection = createConnection();
+                MySqlCommand command = connection.CreateCommand();
+                command.CommandText = "UPDATE players SET groupsteamid = @1, displayname = @2, steamname = @3, charactername = @4 WHERE steamid = @5";
+                command.Parameters.AddWithValue("@1", groupId.m_SteamID);
+                command.Parameters.AddWithValue("@2", displayName);
+                command.Parameters.AddWithValue("@3", steamName);
+                command.Parameters.AddWithValue("@4", characterName);
+                command.Parameters.AddWithValue("@5", id.m_SteamID);
                 connection.Open();
                 command.ExecuteNonQuery();
                 connection.Close();

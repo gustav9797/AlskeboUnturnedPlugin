@@ -114,6 +114,7 @@ namespace AlskeboUnturnedPlugin {
             EconomyManager.setBalance(player, EconomyManager.getBalance(player) - ticketCost);
             tickets.Add(player.CSteamID, ticket);
             players.Add(ticket, player.CSteamID);
+            AlskeboUnturnedPlugin.databaseManager.logPlayerAsync(player.CSteamID, PlayerLogType.BUY_TICKET);
             UnturnedChat.Say(player, "You bought a ticket with number " + ticket + "!");
         }
 

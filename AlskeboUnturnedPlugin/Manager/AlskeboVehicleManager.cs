@@ -16,6 +16,12 @@ using System.Timers;
 using UnityEngine;
 
 namespace AlskeboUnturnedPlugin {
+
+    public enum VehicleLogType {
+        CREATE,
+        DESTROY
+    }
+
     public class AlskeboVehicleManager {
         private Dictionary<CSteamID, List<VehicleInfo>> playerOwnedVehicles = new Dictionary<CSteamID, List<VehicleInfo>>();
         private Dictionary<uint, VehicleInfo> vehicleOwners = new Dictionary<uint, VehicleInfo>();
@@ -264,12 +270,12 @@ namespace AlskeboUnturnedPlugin {
                 }
             }
 
-            List<VehicleInfo> toRemove = new List<VehicleInfo>();
+            Dictionary<VehicleInfo, bool> toRemove = new Dictionary<VehicleInfo, bool>();
             foreach (KeyValuePair<uint, VehicleInfo> pair in vehicleOwners) {
                 InteractableVehicle vehicle = VehicleManager.getVehicle(pair.Key);
 
                 if (vehicle == null || vehicle.isExploded || vehicle.isDrowned) {
-                    toRemove.Add(pair.Value);
+                    toRemove.Add(pair.Value, (vehicle == null));
                 } else if (!lastSave.ContainsKey(pair.Key) || !isSimilar(vehicle, lastSave[pair.Key]) || doOverride) {
                     DatabaseVehicle dbv = DatabaseVehicle.fromInteractableVehicle(pair.Value.databaseId, pair.Value.ownerId.m_SteamID, pair.Value.groupId.m_SteamID, vehicle);
                     new Thread(delegate () {
@@ -281,8 +287,8 @@ namespace AlskeboUnturnedPlugin {
                         lastSave.Add(vehicle.instanceID, dbv);
                 }
             }
-            foreach (VehicleInfo info in toRemove) {
-                deleteOwnedVehicle(info.databaseId, info.instanceId);
+            foreach (KeyValuePair<VehicleInfo, bool> pair in toRemove) {
+                deleteOwnedVehicle(pair.Key, pair.Value);
             }
         }
 
@@ -347,11 +353,19 @@ namespace AlskeboUnturnedPlugin {
             return null;
         }
 
+        public VehicleInfo getOwnedVehicleInfo(InteractableVehicle vehicle) {
+            if (vehicleOwners.ContainsKey(vehicle.instanceID))
+                return vehicleOwners[vehicle.instanceID];
+            return null;
+        }
+
         private long storeOwnedVehicle(CSteamID ownerId, CSteamID groupId, InteractableVehicle vehicle, long databaseId = -1) {
             vehicle.onLockUpdated += new VehicleLockUpdated(delegate () { onLockUpdated(vehicle); });
 
-            if (databaseId == -1)
+            if (databaseId == -1) {
                 databaseId = AlskeboUnturnedPlugin.databaseManager.insertOwnedVehicle(ownerId, groupId, vehicle);
+                AlskeboUnturnedPlugin.databaseManager.logVehicleAsync(databaseId, VehicleLogType.CREATE);
+            }
             if (!playerOwnedVehicles.ContainsKey(ownerId))
                 playerOwnedVehicles.Add(ownerId, new List<VehicleInfo>());
 
@@ -372,32 +386,32 @@ namespace AlskeboUnturnedPlugin {
             return databaseId;
         }
 
-        public void deleteOwnedVehicle(long databaseId, uint instanceId) {
+        public void deleteOwnedVehicle(VehicleInfo info, bool wasNull) {
             new Thread(delegate () {
-                AlskeboUnturnedPlugin.databaseManager.deleteVehicle(databaseId);
+                AlskeboUnturnedPlugin.databaseManager.deleteVehicle(info.databaseId);
             }).Start();
 
-            if (vehicleOwners.ContainsKey(instanceId)) {
-                VehicleInfo info = vehicleOwners[instanceId];
-                if (playerOwnedVehicles.ContainsKey(info.ownerId)) {
-                    List<VehicleInfo> infos = playerOwnedVehicles[info.ownerId];
-                    if (!infos.Remove(info))
-                        Logger.LogWarning("Could not remove from playerOwnedVehicles");
-                    else
-                        playerOwnedVehicles[info.ownerId] = infos;
-                }
-                if (!vehicleOwners.Remove(instanceId)) {
-                    Logger.LogWarning("Could not remove from vehicleOwners");
-                }
+            string logData = "";
+            if (playerOwnedVehicles.ContainsKey(info.ownerId)) {
+                List<VehicleInfo> infos = playerOwnedVehicles[info.ownerId];
+                if (!infos.Remove(info))
+                    Logger.LogWarning("Could not remove from playerOwnedVehicles");
+                else
+                    playerOwnedVehicles[info.ownerId] = infos;
             }
+            if (!vehicleOwners.Remove(info.instanceId)) {
+                Logger.LogWarning("Could not remove from vehicleOwners");
+            }
+            logData += (wasNull ? "NULL" : "");
 
-            if (vehiclesToBeDestroyed.ContainsKey(instanceId))
-                vehiclesToBeDestroyed.Remove(instanceId);
+            if (vehiclesToBeDestroyed.ContainsKey(info.instanceId))
+                vehiclesToBeDestroyed.Remove(info.instanceId);
 
-            if (lastSave.ContainsKey(instanceId))
-                lastSave.Remove(instanceId);
+            if (lastSave.ContainsKey(info.instanceId))
+                lastSave.Remove(info.instanceId);
 
-            Logger.Log("Deleted exploded/drowned/dead vehicle with ID " + databaseId + " and instanceID " + instanceId + ".");
+            AlskeboUnturnedPlugin.databaseManager.logVehicleAsync(info.databaseId, VehicleLogType.DESTROY, logData);
+            Logger.Log("Deleted exploded/drowned/dead vehicle with ID " + info.databaseId + " and instanceID " + info.instanceId + ".");
         }
 
         public String getVehicleTypeName(ushort id) {
