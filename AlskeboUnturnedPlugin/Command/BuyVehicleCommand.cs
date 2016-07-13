@@ -38,6 +38,13 @@ namespace AlskeboUnturnedPlugin {
         public void Execute(IRocketPlayer caller, string[] command) {
             UnturnedPlayer player = (UnturnedPlayer)caller;
 
+            List<VehicleInfo> vehicles = AlskeboUnturnedPlugin.vehicleManager.getOwnedVehicles(player.CSteamID);
+            int maxVehicles = 3;
+            if (vehicles.Count >= maxVehicles) {
+                UnturnedChat.Say(caller, "You can only have " + maxVehicles + " vehicles at once.");
+                return;
+            }
+
             if (command.Length >= 1) {
                 string stringId = command[0];
                 String vehicleName = stringId;
