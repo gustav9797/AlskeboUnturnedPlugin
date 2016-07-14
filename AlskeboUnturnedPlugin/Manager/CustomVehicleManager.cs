@@ -187,9 +187,8 @@ namespace AlskeboUnturnedPlugin {
                     InteractableVehicle vehicle = AlskeboUnturnedPlugin.vehicleManager.spawnNaturalVehicle(point, Quaternion.Euler(0f, spawn.angle, 0f), id);
                     vehicle.fuel = (ushort)UnityEngine.Random.Range((int)vehicle.asset.fuelMin, (int)vehicle.asset.fuelMax);
                     vehicle.health = (ushort)UnityEngine.Random.Range((int)vehicle.asset.healthMin, (int)vehicle.asset.healthMax);
-                    VehicleManager.Instance.channel.openWrite();
-                    VehicleManager.Instance.sendVehicle(vehicle);
-                    VehicleManager.Instance.channel.closeWrite("tellVehicle", ESteamCall.OTHERS, ESteamPacket.UPDATE_RELIABLE_CHUNK_BUFFER);
+                    VehicleManager.sendVehicleFuel(vehicle, vehicle.fuel);
+                    VehicleManager.sendVehicleHealth(vehicle, vehicle.health);
                 }
             }
         }
