@@ -12,7 +12,7 @@ using System.Text;
 namespace AlskeboUnturnedPlugin {
     public class LotteryCommand : IRocketCommand {
         public AllowedCaller AllowedCaller {
-            get { return AllowedCaller.Player; }
+            get { return AllowedCaller.Both; }
         }
 
         public string Name {
@@ -32,9 +32,8 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public void Execute(IRocketPlayer caller, string[] command) {
-            UnturnedPlayer player = (UnturnedPlayer)caller;
             TimeSpan timeToNextDraw = Lottery.timeToNextDraw();
-            UnturnedChat.Say(player, "The next lottery draw is in " + timeToNextDraw.Minutes + " minutes and " + timeToNextDraw.Seconds + " seconds. Buy a ticket with \"/buyticket\".");
+            UnturnedChat.Say(caller, "The next lottery draw is in " + timeToNextDraw.Minutes + " minutes and " + timeToNextDraw.Seconds + " seconds. Buy a ticket with \"/buyticket\".");
         }
 
         public List<string> Permissions {
