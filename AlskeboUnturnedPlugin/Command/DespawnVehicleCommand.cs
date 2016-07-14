@@ -37,7 +37,7 @@ namespace AlskeboUnturnedPlugin {
 
         public void Execute(IRocketPlayer caller, string[] command) {
             UnturnedPlayer sender = (UnturnedPlayer)caller;
-            if (!sender.IsInVehicle && sender.CurrentVehicle != null) {
+            if (!sender.IsInVehicle || sender.CurrentVehicle == null) {
                 UnturnedChat.Say(sender, "You have to be inside a vehicle.");
                 return;
             }
