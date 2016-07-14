@@ -375,6 +375,10 @@ namespace AlskeboUnturnedPlugin {
             return output;
         }
 
+        public List<VehicleInfo> getAllVehicles() {
+            return new List<VehicleInfo>(vehicleOwners.Values);
+        }
+
         public VehicleInfo getOwnedVehicleInfo(uint instanceId) {
             if (vehicleOwners.ContainsKey(instanceId))
                 return vehicleOwners[instanceId];
