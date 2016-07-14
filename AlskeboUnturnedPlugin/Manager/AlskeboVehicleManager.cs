@@ -23,6 +23,13 @@ namespace AlskeboUnturnedPlugin {
         DESTROY
     }
 
+    public enum VehicleDestroyReason {
+        EXPLODED,
+        DROWNED,
+        UNKNOWN,
+        NULL
+    }
+
     public class AlskeboVehicleManager {
         private Dictionary<CSteamID, List<VehicleInfo>> playerOwnedVehicles = new Dictionary<CSteamID, List<VehicleInfo>>();
         private Dictionary<uint, VehicleInfo> vehicleOwners = new Dictionary<uint, VehicleInfo>();
@@ -233,6 +240,7 @@ namespace AlskeboUnturnedPlugin {
                         if (pair.Value.timesHonked >= 20) {
                             pair.Value.vehicle.isExploded = true;
                             //VehicleManager.sendVehicleExploded(vehicle);
+                            Logger.Log("Timer ran out for natural vehicle. InstanceID " + vehicle.instanceID);
                             toRemove.Add(pair.Value.vehicle.instanceID);
                         } else if (!pair.Value.lastHonked) {
                             CustomVehicleManager.sendVehicleHeadlights(vehicle);
@@ -285,7 +293,7 @@ namespace AlskeboUnturnedPlugin {
                 }
             }
 
-            Dictionary<VehicleInfo, bool> toRemove = new Dictionary<VehicleInfo, bool>();
+            Dictionary<VehicleInfo, VehicleDestroyReason> toRemove = new Dictionary<VehicleInfo, VehicleDestroyReason>();
             foreach (KeyValuePair<uint, VehicleInfo> pair in vehicleOwners) {
                 InteractableVehicle vehicle = VehicleManager.getVehicle(pair.Key);
                 if (vehicle != null) {
@@ -298,7 +306,7 @@ namespace AlskeboUnturnedPlugin {
                     }
                 }
                 if (vehicle == null || vehicle.isExploded || vehicle.isDrowned) {
-                    toRemove.Add(pair.Value, (vehicle == null));
+                    toRemove.Add(pair.Value, (vehicle == null ? VehicleDestroyReason.NULL : (vehicle.isExploded ? VehicleDestroyReason.EXPLODED : (vehicle.isDrowned ? VehicleDestroyReason.DROWNED : VehicleDestroyReason.UNKNOWN))));
                 } else if (!lastSave.ContainsKey(pair.Key) || !isSimilar(vehicle, lastSave[pair.Key]) || doOverride) {
                     DatabaseVehicle dbv = DatabaseVehicle.fromInteractableVehicle(pair.Value.databaseId, pair.Value.ownerId.m_SteamID, pair.Value.groupId.m_SteamID, vehicle);
                     new Thread(delegate () {
@@ -310,7 +318,7 @@ namespace AlskeboUnturnedPlugin {
                         lastSave.Add(vehicle.instanceID, dbv);
                 }
             }
-            foreach (KeyValuePair<VehicleInfo, bool> pair in toRemove) {
+            foreach (KeyValuePair<VehicleInfo, VehicleDestroyReason> pair in toRemove) {
                 deleteOwnedVehicle(pair.Key, pair.Value);
             }
         }
@@ -418,7 +426,7 @@ namespace AlskeboUnturnedPlugin {
             return databaseId;
         }
 
-        public void deleteOwnedVehicle(VehicleInfo info, bool wasNull) {
+        public void deleteOwnedVehicle(VehicleInfo info, VehicleDestroyReason reason) {
             new Thread(delegate () {
                 AlskeboUnturnedPlugin.databaseManager.deleteVehicle(info.databaseId);
             }).Start();
@@ -434,7 +442,7 @@ namespace AlskeboUnturnedPlugin {
             if (!vehicleOwners.Remove(info.instanceId)) {
                 Logger.LogWarning("Could not remove from vehicleOwners");
             }
-            logData += (wasNull ? "NULL" : "");
+            logData += reason.ToString();
 
             if (vehiclesToBeDestroyed.ContainsKey(info.instanceId))
                 vehiclesToBeDestroyed.Remove(info.instanceId);
@@ -443,7 +451,7 @@ namespace AlskeboUnturnedPlugin {
                 lastSave.Remove(info.instanceId);
 
             AlskeboUnturnedPlugin.databaseManager.logVehicleAsync(info.databaseId, VehicleLogType.DESTROY, logData);
-            Logger.Log("Deleted exploded/drowned/dead vehicle with ID " + info.databaseId + " and instanceID " + info.instanceId + ".");
+            Logger.Log("Deleted exploded/drowned/dead vehicle with ID " + info.databaseId + " and instanceID " + info.instanceId + ". (" + reason.ToString() + ") " + (info.isNatural ? "natural" : ""));
         }
 
         public String getVehicleTypeName(ushort id) {
