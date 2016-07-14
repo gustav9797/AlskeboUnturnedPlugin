@@ -114,13 +114,13 @@ namespace AlskeboUnturnedPlugin {
                     msg = "was eaten by an arena";
                     break;
                 case EDeathCause.BLEEDING:
-                    msg = "forgot to use a dressing";
+                    msg = "forgot how to use a dressing";
                     break;
                 case EDeathCause.BONES:
                     msg = "hit the ground really hard";
                     break;
                 case EDeathCause.BREATH:
-                    msg = "forgot how to breathe";
+                    msg = "ran out of air";
                     break;
                 case EDeathCause.BURNING:
                     msg = "went up in flames";
@@ -184,7 +184,7 @@ namespace AlskeboUnturnedPlugin {
             if (msg == "")
                 msg = "was killed";
 
-            if (murderer != null && murderer != CSteamID.Nil && murderer != player.CSteamID) {
+            if (murderer != null && murderer != CSteamID.Nil && murderer != Provider.server && murderer != player.CSteamID) {
                 UnturnedPlayer murdererPlayer = UnturnedPlayer.FromCSteamID(murderer);
                 if (murdererPlayer != null)
                     msg += " by " + murdererPlayer.DisplayName;

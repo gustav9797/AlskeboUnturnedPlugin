@@ -36,7 +36,7 @@ namespace AlskeboUnturnedPlugin {
             if (command.Length >= 2 && int.TryParse(command[1], out amount) && amount > 0) {
                 UnturnedPlayer receiver = UnturnedPlayer.FromName(command[0]);
                 if (receiver != null) {
-                    if (!EconomyManager.hasBalance(sender, amount)) {
+                    if (EconomyManager.hasBalance(sender, amount)) {
                         EconomyManager.setBalance(sender, EconomyManager.getBalance(sender) - amount);
                         AlskeboUnturnedPlugin.databaseManager.logPlayerAsync(sender.CSteamID, PlayerLogType.PAY, receiver.CSteamID + "");
                         EconomyManager.addBalance(receiver, amount);
