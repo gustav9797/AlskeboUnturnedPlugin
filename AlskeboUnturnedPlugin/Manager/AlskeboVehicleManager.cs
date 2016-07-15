@@ -145,8 +145,6 @@ namespace AlskeboUnturnedPlugin {
                 vehicle.tellLocked(new CSteamID(dbv.ownerSteamId), new CSteamID(dbv.groupSteamId), dbv.locked);
 
                 storeOwnedVehicle(new CSteamID(dbv.ownerSteamId), new CSteamID(dbv.groupSteamId), vehicle, dbv.id);
-
-                checkVehicleDestroy(vehicleOwners[vehicle.instanceID], vehicle);
             }
 
             if (!removedDefaultVehicles)
