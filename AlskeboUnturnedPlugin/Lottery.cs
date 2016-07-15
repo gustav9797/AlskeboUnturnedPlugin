@@ -18,7 +18,7 @@ namespace AlskeboUnturnedPlugin {
         private static Dictionary<CSteamID, int> tickets = new Dictionary<CSteamID, int>();
         private static Dictionary<int, CSteamID> players = new Dictionary<int, CSteamID>();
         private static List<ushort> winnableItems = new List<ushort>();
-        public static int maxNumber = 50;
+        public static int maxNumber = 25;
 
         public Lottery() {
             winnableItems.Add(297);
