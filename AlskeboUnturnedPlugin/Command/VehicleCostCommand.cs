@@ -73,7 +73,7 @@ namespace AlskeboUnturnedPlugin {
                         UnturnedChat.Say(caller, "This vehicle is not buyable. Contact admin(gustav9797)");
                         return;
                     }
-                    UnturnedChat.Say(caller, "A " + vehicleName + " costs $" + vehiclePrice + ".");
+                    UnturnedChat.Say(caller, "The " + vehicleName + " costs $" + vehiclePrice + ".");
                 }
             } else {
                 UnturnedChat.Say(caller, "Usage: /vehiclecost " + Syntax);
