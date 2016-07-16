@@ -78,7 +78,7 @@ namespace AlskeboUnturnedPlugin {
                 return;
             }
 
-            InteractableVehicle vehicle = AlskeboUnturnedPlugin.vehicleManager.givePlayerOwnedVehicle(who, id);
+            InteractableVehicle vehicle = AlskeboUnturnedPlugin.vehicleManager.givePlayerOwnedVehicle(who, id, false);
             VehicleInfo info = AlskeboUnturnedPlugin.vehicleManager.getOwnedVehicleInfo(vehicle);
             AlskeboUnturnedPlugin.databaseManager.logPlayerAsync(who.CSteamID, PlayerLogType.GIVEN_VEHICLE, "ID:" + info.databaseId);
             if (vehicle == null) {

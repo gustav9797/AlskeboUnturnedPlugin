@@ -36,7 +36,7 @@ namespace AlskeboUnturnedPlugin {
             UnturnedPlayer player = (UnturnedPlayer)caller;
 
             if (!AlskeboUnturnedPlugin.playerManager.getPlayerBoolean(player, "receivedvehicle")) {
-                AlskeboUnturnedPlugin.vehicleManager.givePlayerOwnedVehicle(player, (ushort)AlskeboUnturnedPlugin.r.Next(69, 75));
+                AlskeboUnturnedPlugin.vehicleManager.givePlayerOwnedVehicle(player, (ushort)AlskeboUnturnedPlugin.r.Next(69, 75), true);
                 AlskeboUnturnedPlugin.databaseManager.setPlayerReceivedVehicle(player.CSteamID, true);
                 AlskeboUnturnedPlugin.playerManager.setPlayerData(player, "receivedvehicle", true);
                 AlskeboUnturnedPlugin.databaseManager.logPlayerAsync(player.CSteamID, PlayerLogType.FIRSTVEHICLE);

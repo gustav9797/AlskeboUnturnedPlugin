@@ -8,34 +8,35 @@ using Rocket.Core.Logging;
 using Steamworks;
 using SDG.Unturned;
 using System.Threading;
+using UnityEngine;
 
 namespace AlskeboUnturnedPlugin {
-    public struct DatabaseVehicle {
+    public class DatabaseVehicle {
         public long id;
         public ulong ownerSteamId;
         public ulong groupSteamId;
         public ushort type;
-        public float x, y, z, rx, ry, rz, rw;
+        public Vector3 position;
+        public Quaternion rotation;
         public ushort fuel;
         public ushort health;
         public bool locked;
+        public bool isNoob;
 
-        public static DatabaseVehicle fromInteractableVehicle(long id, ulong ownerSteamId, ulong groupSteamId, InteractableVehicle vehicle) {
-            DatabaseVehicle output = new DatabaseVehicle();
-            output.id = id;
-            output.ownerSteamId = ownerSteamId;
-            output.groupSteamId = groupSteamId;
-            output.type = vehicle.id;
-            output.x = vehicle.transform.position.x;
-            output.y = vehicle.transform.position.y;
-            output.z = vehicle.transform.position.z;
-            output.rx = vehicle.transform.rotation.x;
-            output.ry = vehicle.transform.rotation.y;
-            output.rz = vehicle.transform.rotation.z;
-            output.rw = vehicle.transform.rotation.w;
-            output.fuel = vehicle.fuel;
-            output.health = vehicle.fuel;
-            output.locked = vehicle.isLocked;
+        public DatabaseVehicle(long id, ulong ownerSteamId, ulong groupSteamId, ushort type, Vector3 position, Quaternion rotation, ushort fuel, ushort health, bool locked, bool isNoob) {
+            this.id = id;
+            this.ownerSteamId = ownerSteamId;
+            this.groupSteamId = groupSteamId;
+            this.type = type;
+            this.position = position;
+            this.rotation = rotation;
+            this.fuel = fuel;
+            this.health = health;
+            this.isNoob = isNoob;
+        }
+
+        public static DatabaseVehicle fromInteractableVehicle(long id, ulong ownerSteamId, ulong groupSteamId, bool isNoob, InteractableVehicle vehicle) {
+            DatabaseVehicle output = new DatabaseVehicle(id, ownerSteamId, groupSteamId, vehicle.id, vehicle.transform.position, vehicle.transform.rotation, vehicle.fuel, vehicle.health, vehicle.isLocked, isNoob);
             return output;
         }
     }
@@ -169,12 +170,12 @@ namespace AlskeboUnturnedPlugin {
             }
         }
 
-        public long insertOwnedVehicle(CSteamID id, CSteamID group, InteractableVehicle vehicle) {
+        public long insertOwnedVehicle(CSteamID id, CSteamID group, bool noob, InteractableVehicle vehicle) {
             long returnId = -1;
             try {
                 MySqlConnection connection = createConnection();
                 MySqlCommand command = connection.CreateCommand();
-                command.CommandText = "INSERT INTO vehicles (ownersteamid, groupsteamid, type, x, y, z, rx, ry, rz, rw, fuel, health, locked) VALUES (@1, @12, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @13); SELECT last_insert_id();";
+                command.CommandText = "INSERT INTO vehicles (ownersteamid, groupsteamid, type, x, y, z, rx, ry, rz, rw, fuel, health, locked, noob) VALUES (@1, @12, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @13, @14); SELECT last_insert_id();";
                 command.Parameters.AddWithValue("@1", id.m_SteamID);
                 command.Parameters.AddWithValue("@2", vehicle.id);
                 command.Parameters.AddWithValue("@3", vehicle.transform.position.x);
@@ -188,6 +189,7 @@ namespace AlskeboUnturnedPlugin {
                 command.Parameters.AddWithValue("@11", vehicle.health);
                 command.Parameters.AddWithValue("@12", group.m_SteamID);
                 command.Parameters.AddWithValue("@13", vehicle.isLocked.ToString());
+                command.Parameters.AddWithValue("@14", noob.ToString());
                 connection.Open();
                 returnId = Convert.ToInt32(command.ExecuteScalar());
                 connection.Close();
@@ -208,21 +210,19 @@ namespace AlskeboUnturnedPlugin {
                 MySqlDataReader reader = command.ExecuteReader();
                 if (reader.HasRows) {
                     while (reader.Read()) {
-                        DatabaseVehicle vehicle = new DatabaseVehicle();
-                        vehicle.id = reader.GetInt64(0);
-                        vehicle.ownerSteamId = reader.GetUInt64(1);
-                        vehicle.groupSteamId = reader.GetUInt64(2);
-                        vehicle.type = reader.GetUInt16(3);
-                        vehicle.x = reader.GetFloat(4);
-                        vehicle.y = reader.GetFloat(5);
-                        vehicle.z = reader.GetFloat(6);
-                        vehicle.rx = reader.GetFloat(7);
-                        vehicle.ry = reader.GetFloat(8);
-                        vehicle.rz = reader.GetFloat(9);
-                        vehicle.rw = reader.GetFloat(10);
-                        vehicle.fuel = reader.GetUInt16(11);
-                        vehicle.health = reader.GetUInt16(12);
-                        vehicle.locked = reader.GetBoolean(13);
+                        //TODO: read column names instead of index
+                        DatabaseVehicle vehicle = new DatabaseVehicle(
+                            reader.GetInt64("id"),
+                            reader.GetUInt64("ownersteamid"),
+                            reader.GetUInt64("groupsteamid"),
+                            reader.GetUInt16("type"),
+                            new Vector3(reader.GetFloat("x"), reader.GetFloat("y"), reader.GetFloat("z")),
+                            new Quaternion(reader.GetFloat("rx"), reader.GetFloat("ry"), reader.GetFloat("rz"), reader.GetFloat("rw")),
+                            reader.GetUInt16("fuel"),
+                            reader.GetUInt16("health"),
+                            reader.GetBoolean("locked"),
+                            reader.GetBoolean("noob")
+                            );
                         output.Add(vehicle);
                     }
                 }
@@ -238,19 +238,20 @@ namespace AlskeboUnturnedPlugin {
             try {
                 MySqlConnection connection = createConnection();
                 MySqlCommand command = connection.CreateCommand();
-                command.CommandText = "UPDATE vehicles SET x = @1, y = @2, z = @3, rx = @4, ry = @5, rz = @6, rw = @7, fuel = @8, health = @9, groupsteamid = @11, locked = @12 WHERE id = @10";
-                command.Parameters.AddWithValue("@1", vehicle.x);
-                command.Parameters.AddWithValue("@2", vehicle.y);
-                command.Parameters.AddWithValue("@3", vehicle.z);
-                command.Parameters.AddWithValue("@4", vehicle.rx);
-                command.Parameters.AddWithValue("@5", vehicle.ry);
-                command.Parameters.AddWithValue("@6", vehicle.rz);
-                command.Parameters.AddWithValue("@7", vehicle.rw);
+                command.CommandText = "UPDATE vehicles SET x = @1, y = @2, z = @3, rx = @4, ry = @5, rz = @6, rw = @7, fuel = @8, health = @9, groupsteamid = @11, locked = @12, noob = @13 WHERE id = @10";
+                command.Parameters.AddWithValue("@1", vehicle.position.x);
+                command.Parameters.AddWithValue("@2", vehicle.position.y);
+                command.Parameters.AddWithValue("@3", vehicle.position.z);
+                command.Parameters.AddWithValue("@4", vehicle.rotation.x);
+                command.Parameters.AddWithValue("@5", vehicle.rotation.y);
+                command.Parameters.AddWithValue("@6", vehicle.rotation.z);
+                command.Parameters.AddWithValue("@7", vehicle.rotation.w);
                 command.Parameters.AddWithValue("@8", vehicle.fuel);
                 command.Parameters.AddWithValue("@9", vehicle.health);
                 command.Parameters.AddWithValue("@10", vehicle.id);
                 command.Parameters.AddWithValue("@11", vehicle.groupSteamId);
                 command.Parameters.AddWithValue("@12", vehicle.locked.ToString());
+                command.Parameters.AddWithValue("@13", vehicle.isNoob.ToString());
                 connection.Open();
                 command.ExecuteNonQuery();
                 connection.Close();
