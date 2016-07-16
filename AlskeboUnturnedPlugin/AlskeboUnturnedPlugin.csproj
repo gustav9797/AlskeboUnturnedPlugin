@@ -95,7 +95,7 @@
     <Compile Include="Command\BalanceCommand.cs" />
     <Compile Include="Command\EnterVehicleCommand.cs" />
     <Compile Include="Command\DepositMoneyCommand.cs" />
-    <Compile Include="Command\BuyVehicleCommand.cs" />
+    <Compile Include="Command\VehicleCostCommand.cs" />
     <Compile Include="Command\MyVehiclesCommand.cs" />
     <Compile Include="Manager\EconomyManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
