@@ -77,6 +77,7 @@
   <ItemGroup>
     <Compile Include="Command\AdminPayCommand.cs" />
     <Compile Include="Command\AdminLockCommand.cs" />
+    <Compile Include="Command\BuyVehicleCommand.cs" />
     <Compile Include="Command\DespawnVehicleCommand.cs" />
     <Compile Include="Command\VehiclesCommand.cs" />
     <Compile Include="Command\PayCommand.cs" />
