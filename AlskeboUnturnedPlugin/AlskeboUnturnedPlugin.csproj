@@ -49,6 +49,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Libraries\I18N.West.dll</HintPath>
     </Reference>
+    <Reference Include="Ionic.Zip">
+      <HintPath>Libraries\Ionic.Zip.dll</HintPath>
+    </Reference>
     <Reference Include="MySql.Data, Version=6.9.8.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Libraries\MySql.Data.dll</HintPath>
@@ -79,6 +82,7 @@
     <Compile Include="Command\AdminLockCommand.cs" />
     <Compile Include="Command\BuyVehicleCommand.cs" />
     <Compile Include="Command\DespawnVehicleCommand.cs" />
+    <Compile Include="Command\BackupCommand.cs" />
     <Compile Include="Command\VehiclesCommand.cs" />
     <Compile Include="Command\PayCommand.cs" />
     <Compile Include="Command\LotteryCommand.cs" />
@@ -89,6 +93,7 @@
     <Compile Include="AlskeboConfiguration.cs" />
     <Compile Include="Manager\AlskeboPlayerManager.cs" />
     <Compile Include="AlskeboUnturnedPlugin.cs" />
+    <Compile Include="Manager\BackupManager.cs" />
     <Compile Include="Manager\CustomVehicleManager.cs" />
     <Compile Include="Manager\DatabaseManager.cs" />
     <Compile Include="Command\InfoCommand.cs" />

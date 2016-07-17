@@ -28,6 +28,7 @@ namespace AlskeboUnturnedPlugin {
         public static AlskeboPlayerManager playerManager;
         public static AdvertisingManager advertiser;
         public static VehicleShop vehicleShop;
+        public static BackupManager backupManager;
         public static Lottery lottery;
         public static System.Random r = new System.Random();
 
@@ -263,6 +264,7 @@ namespace AlskeboUnturnedPlugin {
             }).Start();
 
             vehicleManager.onPlayerConnected(player);
+
         }
 
         private void onPlayerDisconnected(UnturnedPlayer player) {
