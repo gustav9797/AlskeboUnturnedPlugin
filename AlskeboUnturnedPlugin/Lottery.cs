@@ -58,16 +58,13 @@ namespace AlskeboUnturnedPlugin {
                     }
                 }
 
-                if (players.Count > 0) {
-                    int winner = AlskeboUnturnedPlugin.r.Next(0, maxNumber + 1);
-                    UnturnedChat.Say("Winning lottery number: " + winner, color);
-                    if (players.ContainsKey(winner)) {
-                        UnturnedPlayer player = UnturnedPlayer.FromCSteamID(players[winner]);
-                        win(player);
-                    } else
-                        UnturnedChat.Say("Nobody picked the right number this time.", color);
+                int winner = AlskeboUnturnedPlugin.r.Next(0, maxNumber + 1);
+                UnturnedChat.Say("Winning lottery number: " + winner, color);
+                if (players.ContainsKey(winner)) {
+                    UnturnedPlayer player = UnturnedPlayer.FromCSteamID(players[winner]);
+                    win(player);
                 } else
-                    UnturnedChat.Say("Nobody bought a ticket for this draw. Buy one with /buyticket <number>", color);
+                    UnturnedChat.Say("Nobody picked the right number this time.", color);
 
                 tickets.Clear();
                 players.Clear();

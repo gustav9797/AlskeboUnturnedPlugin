@@ -23,6 +23,7 @@ namespace AlskeboUnturnedPlugin {
 
         private Dictionary<string, PlayerData> playerDataMap = new Dictionary<string, PlayerData>();
         private bool wasUnloaded = false;
+        public static AlskeboUnturnedPlugin instance;
         public static DatabaseManager databaseManager;
         public static AlskeboVehicleManager vehicleManager;
         public static AlskeboPlayerManager playerManager;
@@ -32,9 +33,12 @@ namespace AlskeboUnturnedPlugin {
         public static Lottery lottery;
         public static System.Random r = new System.Random();
 
+        public static AlskeboConfiguration Config { get { return AlskeboUnturnedPlugin.instance.Configuration.Instance; } }
+
         public override void LoadPlugin() {
             base.LoadPlugin();
 
+            instance = this;
             databaseManager = new DatabaseManager(Configuration.Instance);
             vehicleManager = new AlskeboVehicleManager();
             playerManager = new AlskeboPlayerManager();
