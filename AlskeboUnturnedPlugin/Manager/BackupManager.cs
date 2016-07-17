@@ -14,7 +14,7 @@ namespace AlskeboUnturnedPlugin {
         private System.Timers.Timer timer;
 
         public BackupManager() {
-            timer = new System.Timers.Timer(1800000);
+            timer = new System.Timers.Timer(1741111);
             timer.Elapsed += backup;
             timer.Start();
         }
