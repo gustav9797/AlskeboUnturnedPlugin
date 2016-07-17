@@ -40,6 +40,7 @@ namespace AlskeboUnturnedPlugin {
             playerManager = new AlskeboPlayerManager();
             advertiser = new AdvertisingManager();
             vehicleShop = new VehicleShop();
+            backupManager = new BackupManager();
             lottery = new Lottery();
             U.Events.OnPlayerConnected += onPlayerConnected;
             U.Events.OnPlayerDisconnected += onPlayerDisconnected;
