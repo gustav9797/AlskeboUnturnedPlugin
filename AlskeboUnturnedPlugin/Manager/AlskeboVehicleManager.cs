@@ -38,7 +38,7 @@ namespace AlskeboUnturnedPlugin {
         private bool loadingVehicles = false;
         private bool removedDefaultVehicles = false;
         private bool levelLoaded = false;
-        public static int vehicleDestroyMinutes = 5;
+        public static int vehicleDestroyMinutes = 0;
         public static Color vehicleManagerPrefix = Color.gray;
 
         List<ushort> vehicleDestroySounds = new List<ushort> { 19, 20, 35, 36, 37, 53, 61, 62, 63, 65, 69, 71, 72, 81, 89 };
@@ -240,6 +240,11 @@ namespace AlskeboUnturnedPlugin {
                     if (!pair.Value.vehicle.isDead && (DateTime.Now - pair.Value.lastActivity).Minutes >= vehicleDestroyMinutes) {
                         InteractableVehicle vehicle = pair.Value.vehicle;
                         if (pair.Value.timesHonked >= 20) {
+                            int num2 = UnityEngine.Random.Range(8, 15);
+                            for (int j = 0; j < num2; j++) {
+                                float f = UnityEngine.Random.Range((float)0f, (float)6.283185f);
+                                ItemManager.dropItem(new Item(0x43, EItemOrigin.NATURE), vehicle.transform.position + new Vector3(Mathf.Sin(f) * 3f, 1f, Mathf.Cos(f) * 3f), false, Dedicator.isDedicated, true);
+                            }
                             pair.Value.vehicle.isExploded = true;
                             //VehicleManager.sendVehicleExploded(vehicle);
                             Logger.Log("Timer ran out for natural vehicle. InstanceID " + vehicle.instanceID);

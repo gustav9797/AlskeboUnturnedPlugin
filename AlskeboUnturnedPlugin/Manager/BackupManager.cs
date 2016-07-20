@@ -9,6 +9,7 @@ using Ionic.Zip;
 using System.Threading;
 using Rocket.Core.Utils;
 using System.Diagnostics;
+using SDG.Unturned;
 
 namespace AlskeboUnturnedPlugin {
     public class BackupManager {
@@ -25,18 +26,20 @@ namespace AlskeboUnturnedPlugin {
         }
 
         private void backup(object sender, ElapsedEventArgs e) {
-            Logger.Log("Creating a backup...");
-            doBackup(new Action(delegate () {
-                Logger.Log("Done.");
-            }));
+            if (Provider.clients.Count > 0) {
+                Logger.Log("Creating a backup...");
+                doBackup(new System.Action(delegate () {
+                    Logger.Log("Done.");
+                }));
+            }
         }
 
-        public static void doBackup(Action onFinished) {
+        public static void doBackup(System.Action onFinished) {
             new Thread(delegate () {
                 String levelFolder = ".." + Path.DirectorySeparatorChar + "Level";
                 String playersFolder = ".." + Path.DirectorySeparatorChar + "Players";
                 String backupFolder = "Backups";
-                String backupFile = backupFolder + Path.DirectorySeparatorChar + DateTime.Now.ToString("yyyy-MM-dd_hh-mm-ss") + ".zip";
+                String backupFile = backupFolder + Path.DirectorySeparatorChar + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") + ".zip";
 
                 if (!Directory.Exists(backupFolder))
                     Directory.CreateDirectory(backupFolder);

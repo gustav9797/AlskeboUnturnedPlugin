@@ -111,6 +111,7 @@
     <Compile Include="Command\GiveVehicleCommand.cs" />
     <Compile Include="Manager\AlskeboVehicleManager.cs" />
     <Compile Include="DestroyingVehicleInfo.cs" />
+    <Compile Include="Utils.cs" />
     <Compile Include="VehicleInfo.cs" />
     <Compile Include="VehicleShop.cs" />
   </ItemGroup>

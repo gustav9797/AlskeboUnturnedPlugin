@@ -16,12 +16,7 @@ using Rocket.API.Extensions;
 
 namespace AlskeboUnturnedPlugin {
     public class AlskeboUnturnedPlugin : RocketPlugin<AlskeboConfiguration> {
-        class PlayerData {
-            public bool isInsideVehicle = false;
-            public InteractableVehicle vehicle = null;
-        }
 
-        private Dictionary<string, PlayerData> playerDataMap = new Dictionary<string, PlayerData>();
         private bool wasUnloaded = false;
         public static AlskeboUnturnedPlugin instance;
         public static DatabaseManager databaseManager;
@@ -67,6 +62,22 @@ namespace AlskeboUnturnedPlugin {
             Level.onLevelLoaded += onLevelLoaded;
 
             Logger.LogWarning("\tAlskeboPlugin Loaded Sucessfully");
+        }
+
+        public override void UnloadPlugin(PluginState state = PluginState.Unloaded) {
+            base.UnloadPlugin(state);
+            U.Events.OnPlayerConnected -= onPlayerConnected;
+            U.Events.OnPlayerDisconnected -= onPlayerDisconnected;
+            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateGesture -= onPlayerUpdateGesture;
+            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStance -= onPlayerUpdateStance;
+            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStat -= onPlayerUpdateStat;
+            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerChatted -= onPlayerChatted;
+            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerDeath -= onPlayerDeath;
+
+            vehicleManager.onPluginUnloaded();
+
+            wasUnloaded = true;
+            Logger.LogWarning("\tAlskeboPlugin Unloaded");
         }
 
         private void onPlayerDeath(UnturnedPlayer player, EDeathCause cause, ELimb limb, CSteamID murderer) {
@@ -203,21 +214,6 @@ namespace AlskeboUnturnedPlugin {
             databaseManager.logPlayerAsync(player.CSteamID, PlayerLogType.CHAT, message);
         }
 
-        public override void UnloadPlugin(PluginState state = PluginState.Unloaded) {
-            base.UnloadPlugin(state);
-            U.Events.OnPlayerConnected -= onPlayerConnected;
-            U.Events.OnPlayerDisconnected -= onPlayerDisconnected;
-            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateGesture -= onPlayerUpdateGesture;
-            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStance -= onPlayerUpdateStance;
-            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStat -= onPlayerUpdateStat;
-            Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerChatted -= onPlayerChatted;
-
-            vehicleManager.onPluginUnloaded();
-
-            wasUnloaded = true;
-            Logger.LogWarning("\tAlskeboPlugin Unloaded");
-        }
-
         private void onLevelLoaded(int level) {
             Level.onLevelLoaded -= onLevelLoaded;
 
@@ -274,8 +270,12 @@ namespace AlskeboUnturnedPlugin {
 
         private void onPlayerDisconnected(UnturnedPlayer player) {
             databaseManager.logPlayerAsync(player.CSteamID, PlayerLogType.DISCONNECT);
-            playerManager.onPlayerDisconnected(player);
+
+            if (playerManager.getPlayerBoolean(player, "isInsideVehicle"))
+                vehicleManager.onPlayerExitVehicle(player, (InteractableVehicle)playerManager.getPlayerData(player, "currentVehicle"));
+
             vehicleManager.onPlayerDisconnected(player);
+            playerManager.onPlayerDisconnected(player);
         }
 
         private void onPlayerUpdateGesture(UnturnedPlayer player, Rocket.Unturned.Events.UnturnedPlayerEvents.PlayerGesture gesture) {
@@ -348,41 +348,22 @@ namespace AlskeboUnturnedPlugin {
         }
 
         private void onPlayerUpdateStance(UnturnedPlayer player, byte stance) {
-            if (!playerDataMap.ContainsKey(player.Id) || playerDataMap[player.Id] == null)
-                playerDataMap.Add(player.Id, new PlayerData());
+            bool isInsideVehicle = playerManager.getPlayerBoolean(player, "isInsideVehicle");
 
-            PlayerData playerData = playerDataMap[player.Id];
-
-            if ((stance == 6 || stance == 7) && !playerData.isInsideVehicle) {
-                playerData.isInsideVehicle = true;
-                playerData.vehicle = player.CurrentVehicle;
-                playerDataMap[player.Id] = playerData;
+            if ((stance == 6 || stance == 7) && !isInsideVehicle) {
+                playerManager.setPlayerData(player, "isInsideVehicle", true);
+                playerManager.setPlayerData(player, "currentVehicle", player.CurrentVehicle);
                 vehicleManager.onPlayerEnterVehicle(player, player.CurrentVehicle);
-            } else if (stance != 6 && stance != 7 && playerData.isInsideVehicle) {
-                playerData.isInsideVehicle = false;
-                playerDataMap[player.Id] = playerData;
-                vehicleManager.onPlayerExitVehicle(player, playerData.vehicle);
+            } else if (stance != 6 && stance != 7 && isInsideVehicle) {
+                playerManager.setPlayerData(player, "isInsideVehicle", false);
+                playerManager.setPlayerData(player, "currentVehicle", null);
+                vehicleManager.onPlayerExitVehicle(player, (InteractableVehicle)playerManager.getPlayerData(player, "currentVehicle"));
             }
         }
 
         private void onPlayerUpdateStat(UnturnedPlayer player, EPlayerStat stat) {
             if (stat == EPlayerStat.KILLS_ZOMBIES_MEGA)
                 UnturnedChat.Say("Rumours say " + player.DisplayName + " has killed a mega zombie...", Color.blue);
-        }
-
-        public static LocationNode getClosestLocation(Vector3 pos) {
-            LocationNode closest = null;
-            float closestDistance = float.MaxValue;
-            foreach (Node node in LevelNodes.Nodes) {
-                if (node.type == ENodeType.LOCATION) {
-                    float dist = Vector3.Distance(node.Position, pos);
-                    if (closest == null || dist < closestDistance) {
-                        closest = (LocationNode)node;
-                        closestDistance = dist;
-                    }
-                }
-            }
-            return closest;
         }
 
     }

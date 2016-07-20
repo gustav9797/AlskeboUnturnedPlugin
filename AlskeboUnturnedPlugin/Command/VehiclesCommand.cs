@@ -41,7 +41,7 @@ namespace AlskeboUnturnedPlugin {
                         InteractableVehicle vehicle = VehicleManager.getVehicle(info.instanceId);
                         if (vehicle != null) {
                             String pos = Math.Round(vehicle.transform.position.x) + "|" + Math.Round(vehicle.transform.position.y) + "|" + Math.Round(vehicle.transform.position.z);
-                            UnturnedChat.Say(player, "#" + vehicle.instanceID + " " + vehicle.asset.Name + " - " + vehicle.health + " HP - " + (info.isLocked ? "Locked" : "Unlocked") + "\n Last seen near " + AlskeboUnturnedPlugin.getClosestLocation(vehicle.transform.position).Name);
+                            UnturnedChat.Say(player, "#" + vehicle.instanceID + " " + vehicle.asset.Name + " - " + vehicle.health + " HP - " + (info.isLocked ? "Locked" : "Unlocked") + "\n Last seen near " + Utils.getClosestLocation(vehicle.transform.position).Name);
                         }
                     }
                     if (vehicles.Count <= 0)

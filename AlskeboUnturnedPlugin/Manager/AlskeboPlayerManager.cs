@@ -34,36 +34,40 @@ namespace AlskeboUnturnedPlugin {
                 playerData.Remove(player.CSteamID);
         }
 
-        public void setPlayerData(UnturnedPlayer player, String data, object value) {
+        public void setPlayerData(UnturnedPlayer player, String key, object value) {
+            key = key.ToLower();
             Dictionary<string, object> dict = playerData[player.CSteamID];
             if (dict == null)
                 dict = new Dictionary<string, object>();
-            if (dict.ContainsKey(data))
-                dict[data] = value;
+            if (dict.ContainsKey(key))
+                dict[key] = value;
             else
-                dict.Add(data, value);
+                dict.Add(key, value);
             playerData[player.CSteamID] = dict;
         }
 
-        public object getPlayerData(UnturnedPlayer player, String data) {
+        public object getPlayerData(UnturnedPlayer player, String key) {
+            key = key.ToLower();
             Dictionary<string, object> dict = playerData[player.CSteamID];
-            if (dict == null || !dict.ContainsKey(data))
+            if (dict == null || !dict.ContainsKey(key))
                 return null;
-            return dict[data];
+            return dict[key];
         }
 
-        public bool getPlayerBoolean(UnturnedPlayer player, String data) {
+        public bool getPlayerBoolean(UnturnedPlayer player, String key, bool defaultValue = false) {
+            key = key.ToLower();
             Dictionary<string, object> dict = playerData[player.CSteamID];
-            if (dict == null || !dict.ContainsKey(data))
-                return false;
-            return (bool)dict[data];
+            if (dict == null || !dict.ContainsKey(key))
+                return defaultValue;
+            return (bool)dict[key];
         }
 
-        public int getPlayerInt(UnturnedPlayer player, String data) {
+        public int getPlayerInt(UnturnedPlayer player, String key) {
+            key = key.ToLower();
             Dictionary<string, object> dict = playerData[player.CSteamID];
-            if (dict == null || !dict.ContainsKey(data))
+            if (dict == null || !dict.ContainsKey(key))
                 return 0;
-            return (int)dict[data];
+            return (int)dict[key];
         }
     }
 }
