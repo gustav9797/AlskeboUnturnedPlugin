@@ -41,6 +41,17 @@ namespace AlskeboUnturnedPlugin {
         public static int vehicleDestroyMinutes = 0;
         public static Color vehicleManagerPrefix = Color.gray;
 
+        public int NaturalVehicleCount {
+            get {
+                int naturalCount = 0;
+                foreach (VehicleInfo info in vehicleOwners.Values) {
+                    if (info.isNatural)
+                        naturalCount++;
+                }
+                return naturalCount;
+            }
+        }
+
         List<ushort> vehicleDestroySounds = new List<ushort> { 19, 20, 35, 36, 37, 53, 61, 62, 63, 65, 69, 71, 72, 81, 89 };
         System.Random r = new System.Random();
 
@@ -74,10 +85,6 @@ namespace AlskeboUnturnedPlugin {
             Level.onPrePreLevelLoaded += onLatePrePreLevelLoaded;
         }
 
-        public void onPluginLoaded() {
-
-        }
-
         public void onPrePreLevelLoaded(int level) {
             Level.onPrePreLevelLoaded -= onPrePreLevelLoaded;
             String fileName = ReadWrite.PATH + ServerSavedata.directory + "/" + Provider.serverID + "/Level/" + Level.info.name + "/Vehicles.dat";
@@ -88,32 +95,13 @@ namespace AlskeboUnturnedPlugin {
                 Logger.Log("Could not find Vehicles.dat.");
         }
 
-        public int NaturalVehicleCount {
-            get {
-                int naturalCount = 0;
-                foreach (VehicleInfo info in vehicleOwners.Values) {
-                    if (info.isNatural)
-                        naturalCount++;
-                }
-                return naturalCount;
-            }
-        }
-
         public void onLatePrePreLevelLoaded(int level) {
             loadingVehicles = true;
             Level.onLevelLoaded -= onLatePrePreLevelLoaded;
 
             Logger.Log("Receiving owned vehicles from database...");
             List<DatabaseVehicle> vehicles = AlskeboUnturnedPlugin.databaseManager.receiveOwnedVehicles();
-            /*int naturalCount = 0;
-            foreach (DatabaseVehicle v in vehicles) {
-                if (v.ownerSteamId == 0)
-                    naturalCount++;
-            }
 
-            int defaultVehicleCount = 24;*/
-            removedDefaultVehicles = true;
-            //if (naturalCount >= defaultVehicleCount) {
             Logger.Log("Removing all default vehicles (" + VehicleManager.vehicles.Count + ")...");
         start:
             foreach (InteractableVehicle v in VehicleManager.vehicles) {
@@ -127,10 +115,6 @@ namespace AlskeboUnturnedPlugin {
             CustomVehicleManager.custominstanceCount = 0U;
             CustomVehicleManager.customrespawnVehicleIndex = (ushort)0;
             BarricadeManager.clearPlants();
-            /*} else {
-                removedDefaultVehicles = false;
-                Logger.Log("There are (" + naturalCount + "/" + defaultVehicleCount + ") natural vehicles, not removing default vehicles.");
-            }*/
 
             Logger.Log("Spawning stored vehicles...");
             foreach (DatabaseVehicle dbv in vehicles) {
@@ -151,14 +135,9 @@ namespace AlskeboUnturnedPlugin {
                 storeOwnedVehicle(new CSteamID(dbv.ownerSteamId), new CSteamID(dbv.groupSteamId), vehicle, dbv.isNoob, dbv.id);
             }
 
-            if (!removedDefaultVehicles)
-                saveVehicles(true);
             Logger.Log("Done.");
             loadingVehicles = false;
             levelLoaded = true;
-        }
-
-        public void onPluginUnloaded() {
         }
 
         public void onServerShutdown() {
@@ -174,14 +153,6 @@ namespace AlskeboUnturnedPlugin {
                 Logger.Log("Could not find Vehicles.dat.");
         }
 
-        public void onPlayerConnected(UnturnedPlayer player) {
-
-        }
-
-        public void onPlayerDisconnected(UnturnedPlayer player) {
-
-        }
-
         public void onPlayerEnterVehicle(UnturnedPlayer player, InteractableVehicle vehicle) {
             if (vehiclesToBeDestroyed.ContainsKey(vehicle.instanceID)) {
                 vehiclesToBeDestroyed.Remove(vehicle.instanceID);
@@ -195,7 +166,7 @@ namespace AlskeboUnturnedPlugin {
             }
 
             CSteamID owner = getVehicleOwner(player.CurrentVehicle);
-            String vehicleName = getVehicleTypeName(player.CurrentVehicle.id);
+            String vehicleName = Utils.getVehicleTypeName(player.CurrentVehicle.id);
             if (owner.m_SteamID != 0) {
                 VehicleInfo info = getOwnedVehicleInfo(player.CurrentVehicle.instanceID);
                 String ownerName = (info != null ? info.ownerName : "Unknown player");
@@ -246,8 +217,6 @@ namespace AlskeboUnturnedPlugin {
                                 ItemManager.dropItem(new Item(0x43, EItemOrigin.NATURE), vehicle.transform.position + new Vector3(Mathf.Sin(f) * 3f, 1f, Mathf.Cos(f) * 3f), false, Dedicator.isDedicated, true);
                             }
                             pair.Value.vehicle.isExploded = true;
-                            //VehicleManager.sendVehicleExploded(vehicle);
-                            Logger.Log("Timer ran out for natural vehicle. InstanceID " + vehicle.instanceID);
                             toRemove.Add(pair.Value.vehicle.instanceID);
                         } else if (!pair.Value.lastHonked) {
                             CustomVehicleManager.sendVehicleHeadlights(vehicle);
@@ -314,7 +283,7 @@ namespace AlskeboUnturnedPlugin {
                 }
                 if (vehicle == null || vehicle.isExploded || vehicle.isDrowned) {
                     toRemove.Add(pair.Value, (vehicle == null ? VehicleDestroyReason.NULL : (vehicle.isExploded ? VehicleDestroyReason.EXPLODED : (vehicle.isDrowned ? VehicleDestroyReason.DROWNED : VehicleDestroyReason.UNKNOWN))));
-                } else if (!lastSave.ContainsKey(pair.Key) || !isSimilar(vehicle, lastSave[pair.Key]) || doOverride) {
+                } else if (doOverride || !lastSave.ContainsKey(pair.Key) || !isSimilar(vehicle, lastSave[pair.Key])) {
                     DatabaseVehicle dbv = DatabaseVehicle.fromInteractableVehicle(pair.Value.databaseId, pair.Value.ownerId.m_SteamID, pair.Value.groupId.m_SteamID, pair.Value.isNoob, vehicle);
                     new Thread(delegate () {
                         AlskeboUnturnedPlugin.databaseManager.updateVehicle(dbv);
@@ -456,13 +425,6 @@ namespace AlskeboUnturnedPlugin {
             Logger.Log("Deleted exploded/drowned/dead vehicle with ID " + info.databaseId + " and instanceID " + info.instanceId + ". (" + reason.ToString() + ") " + (info.isNatural ? "natural" : ""));
         }
 
-        public String getVehicleTypeName(ushort id) {
-            Asset a = SDG.Unturned.Assets.find(EAssetType.VEHICLE, id);
-            if (a != null)
-                return ((VehicleAsset)a).Name;
-            return "Unknown vehicle";
-        }
-
         private static InteractableVehicle giveVehicle(UnturnedPlayer player, ushort id) {
             Vector3 point = player.Player.transform.position + player.Player.transform.forward * 6f;
             RaycastHit hitInfo;
@@ -531,8 +493,5 @@ namespace AlskeboUnturnedPlugin {
                 Logger.LogWarning("Could not lock non-owned vehicle");
         }
 
-        public int getFuelPercentage(InteractableVehicle vehicle) {
-            return (int)Math.Floor(((float)vehicle.fuel / (float)vehicle.asset.fuel) * 100);
-        }
     }
 }

@@ -49,8 +49,6 @@ namespace AlskeboUnturnedPlugin {
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerChatted += onPlayerChatted;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerDeath += onPlayerDeath;
 
-            vehicleManager.onPluginLoaded();
-
             if (wasUnloaded) {
                 Logger.LogWarning("\tRe-sending onPlayerConnected calls");
                 foreach (SteamPlayer player in Provider.clients) {
@@ -73,8 +71,6 @@ namespace AlskeboUnturnedPlugin {
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerUpdateStat -= onPlayerUpdateStat;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerChatted -= onPlayerChatted;
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerDeath -= onPlayerDeath;
-
-            vehicleManager.onPluginUnloaded();
 
             wasUnloaded = true;
             Logger.LogWarning("\tAlskeboPlugin Unloaded");
@@ -264,8 +260,6 @@ namespace AlskeboUnturnedPlugin {
                     UnturnedChat.Say(player, "Receive your one-time free personal car with \"/firstvehicle\"!");
             }).Start();
 
-            vehicleManager.onPlayerConnected(player);
-
         }
 
         private void onPlayerDisconnected(UnturnedPlayer player) {
@@ -274,7 +268,6 @@ namespace AlskeboUnturnedPlugin {
             if (playerManager.getPlayerBoolean(player, "isInsideVehicle"))
                 vehicleManager.onPlayerExitVehicle(player, (InteractableVehicle)playerManager.getPlayerData(player, "currentVehicle"));
 
-            vehicleManager.onPlayerDisconnected(player);
             playerManager.onPlayerDisconnected(player);
         }
 

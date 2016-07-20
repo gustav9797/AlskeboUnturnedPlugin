@@ -22,5 +22,16 @@ namespace AlskeboUnturnedPlugin {
             }
             return closest;
         }
+
+        public static String getVehicleTypeName(ushort id) {
+            Asset a = SDG.Unturned.Assets.find(EAssetType.VEHICLE, id);
+            if (a != null)
+                return ((VehicleAsset)a).Name;
+            return "Unknown vehicle";
+        }
+
+        public static int getFuelPercentage(InteractableVehicle vehicle) {
+            return (int)Math.Floor(((float)vehicle.fuel / (float)vehicle.asset.fuel) * 100);
+        }
     }
 }
