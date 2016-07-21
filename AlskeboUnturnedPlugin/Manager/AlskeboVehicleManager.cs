@@ -38,7 +38,7 @@ namespace AlskeboUnturnedPlugin {
         private bool loadingVehicles = false;
         private bool removedDefaultVehicles = false;
         private bool levelLoaded = false;
-        public static int vehicleDestroyMinutes = 0;
+        public static int vehicleDestroyMinutes = 5;
         public static Color vehicleManagerPrefix = Color.gray;
 
         public int NaturalVehicleCount {
