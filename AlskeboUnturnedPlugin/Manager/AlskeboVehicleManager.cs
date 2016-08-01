@@ -36,7 +36,6 @@ namespace AlskeboUnturnedPlugin {
         private Dictionary<uint, DestroyingVehicleInfo> vehiclesToBeDestroyed = new Dictionary<uint, DestroyingVehicleInfo>();
         private Dictionary<uint, DatabaseVehicle> lastSave = new Dictionary<uint, DatabaseVehicle>();
         private bool loadingVehicles = false;
-        private bool removedDefaultVehicles = false;
         private bool levelLoaded = false;
         public static int vehicleDestroyMinutes = 5;
         public static Color vehicleManagerPrefix = Color.gray;
@@ -118,6 +117,7 @@ namespace AlskeboUnturnedPlugin {
 
             Logger.Log("Spawning stored vehicles...");
             foreach (DatabaseVehicle dbv in vehicles) {
+
                 InteractableVehicle vehicle = CustomVehicleManager.customSpawnVehicle(
                     dbv.type,
                     new Vector3(dbv.position.x, dbv.position.y + 1.0f, dbv.position.z),
@@ -186,7 +186,7 @@ namespace AlskeboUnturnedPlugin {
 
         public void onPlayerExitVehicle(UnturnedPlayer player, InteractableVehicle vehicle) {
             if (vehicle != null) {
-                VehicleInfo info = getOwnedVehicleInfo(vehicle.instanceID);
+                VehicleInfo info = getOwnedVehicleInfo(vehicle);
                 if (info != null) {
                     if (checkVehicleDestroy(info, vehicle))
                         UnturnedChat.Say(player, "This vehicle despawns in " + vehicleDestroyMinutes + " minutes. Abort the process by entering it.", vehicleManagerPrefix);

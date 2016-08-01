@@ -349,8 +349,8 @@ namespace AlskeboUnturnedPlugin {
                 vehicleManager.onPlayerEnterVehicle(player, player.CurrentVehicle);
             } else if (stance != 6 && stance != 7 && isInsideVehicle) {
                 playerManager.setPlayerData(player, "isInsideVehicle", false);
-                playerManager.setPlayerData(player, "currentVehicle", null);
                 vehicleManager.onPlayerExitVehicle(player, (InteractableVehicle)playerManager.getPlayerData(player, "currentVehicle"));
+                playerManager.setPlayerData(player, "currentVehicle", null);
             }
         }
 
