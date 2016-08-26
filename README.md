@@ -1,2 +1,2 @@
 # AlskeboUnturnedPlugin
-# An Unturned plugin
+An Unturned plugin
