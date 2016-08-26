@@ -28,6 +28,10 @@ namespace AlskeboUnturnedPlugin {
             buyableVehicles.Add(85, 75); //tractor
             buyableVehicles.Add(89, 75); //makeshift medium
 
+            for (ushort i = 110; i <= 117; ++i) { //autos
+                buyableVehicles.Add(i, 75);
+            }
+
             buyableVehicles.Add(33, 125); //policecar
             buyableVehicles.Add(34, 125); //firetruck
             buyableVehicles.Add(54, 125); //ambulance
@@ -40,13 +44,16 @@ namespace AlskeboUnturnedPlugin {
             buyableVehicles.Add(56, 150); //desert humvee
             buyableVehicles.Add(87, 150); //forest jeep
             buyableVehicles.Add(88, 150); //desert jeep
+            buyableVehicles.Add(118, 150); //toiler
             for (ushort i = 77; i <= 84; ++i) { //racecars
                 buyableVehicles.Add(i, 150);
             }
 
             buyableVehicles.Add(92, 150); //sandpiper
             buyableVehicles.Add(96, 150); //otter
+            buyableVehicles.Add(108, 150); //police launch
 
+            buyableVehicles.Add(119, 200); //russian apc
             buyableVehicles.Add(53, 200); //forest apc
             buyableVehicles.Add(57, 200); //desert apc
             buyableVehicles.Add(58, 200); //explorer

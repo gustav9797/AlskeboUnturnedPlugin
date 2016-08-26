@@ -231,7 +231,7 @@ namespace AlskeboUnturnedPlugin {
                 }
             }
             if (disabledATMs < 6) {
-                throw new Exception("Not all 6 ATMs were disabled.");
+                Logger.Log("Not all 6 ATMs were disabled.");
             }
         }
 

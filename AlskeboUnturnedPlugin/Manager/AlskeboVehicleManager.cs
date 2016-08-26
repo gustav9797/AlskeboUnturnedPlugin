@@ -261,41 +261,43 @@ namespace AlskeboUnturnedPlugin {
         }
 
         private void saveVehicles(bool doOverride = false) {
-            foreach (InteractableVehicle vehicle in VehicleManager.Vehicles) {
-                if (!vehicleOwners.ContainsKey(vehicle.instanceID) && !vehicle.isExploded && !vehicle.isDrowned && !vehicle.isDead) {
-                    // Vehicle was spawned with /v or unturned respawned it
-                    long databaseId = storeOwnedVehicle(new CSteamID(0), new CSteamID(0), vehicle, false);
-                    Logger.Log("Stored naturally spawned vehicle with ID " + databaseId + " and instanceID " + vehicle.instanceID + ".");
-                }
-            }
-
-            Dictionary<VehicleInfo, VehicleDestroyReason> toRemove = new Dictionary<VehicleInfo, VehicleDestroyReason>();
-            foreach (KeyValuePair<uint, VehicleInfo> pair in vehicleOwners) {
-                InteractableVehicle vehicle = VehicleManager.getVehicle(pair.Key);
-                if (vehicle != null) {
-                    if (vehicle.isExploded) {
-                        AlskeboUnturnedPlugin.databaseManager.logVehicleAsync(pair.Value.databaseId, VehicleLogType.DESTROY, "EXPLODED");
-                    } else if (vehicle.isDrowned) {
-                        AlskeboUnturnedPlugin.databaseManager.logVehicleAsync(pair.Value.databaseId, VehicleLogType.DESTROY, "DROWNED");
-                    } else if (vehicle.isDead) {
-                        AlskeboUnturnedPlugin.databaseManager.logVehicleAsync(pair.Value.databaseId, VehicleLogType.DESTROY, "DEAD");
+            if (levelLoaded) {
+                foreach (InteractableVehicle vehicle in VehicleManager.Vehicles) {
+                    if (!vehicleOwners.ContainsKey(vehicle.instanceID) && !vehicle.isExploded && !vehicle.isDrowned && !vehicle.isDead) {
+                        // Vehicle was spawned with /v or unturned respawned it
+                        long databaseId = storeOwnedVehicle(new CSteamID(0), new CSteamID(0), vehicle, false);
+                        Logger.Log("Stored naturally spawned vehicle with ID " + databaseId + " and instanceID " + vehicle.instanceID + ".");
                     }
                 }
-                if (vehicle == null || vehicle.isExploded || vehicle.isDrowned) {
-                    toRemove.Add(pair.Value, (vehicle == null ? VehicleDestroyReason.NULL : (vehicle.isExploded ? VehicleDestroyReason.EXPLODED : (vehicle.isDrowned ? VehicleDestroyReason.DROWNED : VehicleDestroyReason.UNKNOWN))));
-                } else if (doOverride || !lastSave.ContainsKey(pair.Key) || !isSimilar(vehicle, lastSave[pair.Key])) {
-                    DatabaseVehicle dbv = DatabaseVehicle.fromInteractableVehicle(pair.Value.databaseId, pair.Value.ownerId.m_SteamID, pair.Value.groupId.m_SteamID, pair.Value.isNoob, vehicle);
-                    new Thread(delegate () {
-                        AlskeboUnturnedPlugin.databaseManager.updateVehicle(dbv);
-                    }).Start();
-                    if (lastSave.ContainsKey(vehicle.instanceID))
-                        lastSave[vehicle.instanceID] = dbv;
-                    else
-                        lastSave.Add(vehicle.instanceID, dbv);
+
+                Dictionary<VehicleInfo, VehicleDestroyReason> toRemove = new Dictionary<VehicleInfo, VehicleDestroyReason>();
+                foreach (KeyValuePair<uint, VehicleInfo> pair in vehicleOwners) {
+                    InteractableVehicle vehicle = VehicleManager.getVehicle(pair.Key);
+                    if (vehicle != null) {
+                        if (vehicle.isExploded) {
+                            AlskeboUnturnedPlugin.databaseManager.logVehicleAsync(pair.Value.databaseId, VehicleLogType.DESTROY, "EXPLODED");
+                        } else if (vehicle.isDrowned) {
+                            AlskeboUnturnedPlugin.databaseManager.logVehicleAsync(pair.Value.databaseId, VehicleLogType.DESTROY, "DROWNED");
+                        } else if (vehicle.isDead) {
+                            AlskeboUnturnedPlugin.databaseManager.logVehicleAsync(pair.Value.databaseId, VehicleLogType.DESTROY, "DEAD");
+                        }
+                    }
+                    if (vehicle == null || vehicle.isExploded || vehicle.isDrowned) {
+                        toRemove.Add(pair.Value, (vehicle == null ? VehicleDestroyReason.NULL : (vehicle.isExploded ? VehicleDestroyReason.EXPLODED : (vehicle.isDrowned ? VehicleDestroyReason.DROWNED : VehicleDestroyReason.UNKNOWN))));
+                    } else if (doOverride || !lastSave.ContainsKey(pair.Key) || !isSimilar(vehicle, lastSave[pair.Key])) {
+                        DatabaseVehicle dbv = DatabaseVehicle.fromInteractableVehicle(pair.Value.databaseId, pair.Value.ownerId.m_SteamID, pair.Value.groupId.m_SteamID, pair.Value.isNoob, vehicle);
+                        new Thread(delegate () {
+                            AlskeboUnturnedPlugin.databaseManager.updateVehicle(dbv);
+                        }).Start();
+                        if (lastSave.ContainsKey(vehicle.instanceID))
+                            lastSave[vehicle.instanceID] = dbv;
+                        else
+                            lastSave.Add(vehicle.instanceID, dbv);
+                    }
                 }
-            }
-            foreach (KeyValuePair<VehicleInfo, VehicleDestroyReason> pair in toRemove) {
-                deleteOwnedVehicle(pair.Key, pair.Value);
+                foreach (KeyValuePair<VehicleInfo, VehicleDestroyReason> pair in toRemove) {
+                    deleteOwnedVehicle(pair.Key, pair.Value);
+                }
             }
         }
 
