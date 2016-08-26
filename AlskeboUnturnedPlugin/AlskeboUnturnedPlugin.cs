@@ -132,11 +132,20 @@ namespace AlskeboUnturnedPlugin {
                 case EDeathCause.BONES:
                     msg = "hit the ground really hard";
                     break;
+                case EDeathCause.BOULDER:
+                    msg = "was hit by a boulder";
+                    break;
                 case EDeathCause.BREATH:
                     msg = "ran out of air";
                     break;
+                case EDeathCause.BURNER:
+                    msg = "met burning zombie";
+                    break;
                 case EDeathCause.BURNING:
                     msg = "went up in flames";
+                    break;
+                case EDeathCause.SPIT:
+                    msg = "got poisonous spit in their eyes";
                     break;
                 case EDeathCause.FOOD:
                     msg = "didn't eat properly";
@@ -157,14 +166,13 @@ namespace AlskeboUnturnedPlugin {
                     msg = "was shot by a sentry";
                     break;
                 case EDeathCause.SHRED:
-                    msg = "was shredded";
+                    msg = "stepped on barbed wire";
                     break;
                 case EDeathCause.SPLASH:
-                    msg = "was spashed to death";
+                    msg = "was hit by an explosive bullet";
                     break;
                 case EDeathCause.SUICIDE:
-                    msg = "didn't want to live anymore";
-                    break;
+                    return;
                 case EDeathCause.WATER:
                     msg = "was really thirsty";
                     break;
@@ -190,6 +198,8 @@ namespace AlskeboUnturnedPlugin {
                     msg = "was stabbed" + (limbName != "" ? " in the " + limbName : " to death");
                     break;
                 case EDeathCause.VEHICLE:
+                    msg = "exploded with their vehicle";
+                    break;
                 case EDeathCause.ROADKILL:
                     msg = "was run over";
                     break;

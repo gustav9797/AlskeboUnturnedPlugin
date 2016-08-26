@@ -9,3 +9,7 @@ C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin
 C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\MySql.Data.dll
 C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\obj\Release\AlskeboUnturnedPlugin.csprojResolveAssemblyReference.cache
 C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\Ionic.Zip.dll
+C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\Rocket.API.dll
+C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\Rocket.Core.dll
+C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\Rocket.Unturned.dll
+C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\UnityEngine.dll
