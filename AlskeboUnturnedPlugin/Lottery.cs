@@ -18,7 +18,7 @@ namespace AlskeboUnturnedPlugin {
         private static Dictionary<CSteamID, int> tickets = new Dictionary<CSteamID, int>();
         private static Dictionary<int, CSteamID> players = new Dictionary<int, CSteamID>();
         private static List<ushort> winnableItems = new List<ushort>();
-        public static int maxNumber = 25;
+        public static int maxNumber = 20;
 
         public Lottery() {
             winnableItems.Add(297);
@@ -102,7 +102,7 @@ namespace AlskeboUnturnedPlugin {
                 return;
             }
 
-            int ticketCost = 5;
+            int ticketCost = 1;
             if (!EconomyManager.hasBalance(player, ticketCost)) {
                 UnturnedChat.Say(player, "You need $" + ticketCost + " to enter the lottery.");
                 return;

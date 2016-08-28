@@ -20,8 +20,8 @@ namespace AlskeboUnturnedPlugin {
 
             messages.Add("Natural cars respawn after " + AlskeboVehicleManager.vehicleDestroyMinutes + " minutes idle.");
             messages.Add("Cars have 5x HP. Buildables have 2x HP.");
-            messages.Add("You can view structure health with the command \"/structureinfo\".");
-            messages.Add("You can view barricade health with the command \"/barricadeinfo\".");
+            messages.Add("You can view structure health with the command \"/sinfo\".");
+            messages.Add("You can view barricade health with the command \"/binfo\".");
             messages.Add("Alskebo.com has many custom features. Take a look in \"/p\".");
             messages.Add("Buy vehicles with \"/buyvehicle <id/name>\".");
             messages.Add("Admin abuse is nonexistent in this server.");

@@ -127,7 +127,7 @@ namespace AlskeboUnturnedPlugin {
                     msg = "was eaten by an arena";
                     break;
                 case EDeathCause.BLEEDING:
-                    msg = "forgot how to use a dressing";
+                    msg = "forgot to use a dressing";
                     break;
                 case EDeathCause.BONES:
                     msg = "hit the ground really hard";
@@ -255,7 +255,7 @@ namespace AlskeboUnturnedPlugin {
                 if (!databaseManager.playerExists(player.CSteamID)) {
                     databaseManager.insertPlayer(player.CSteamID, player.SteamGroupID, player.DisplayName, player.SteamName, player.CharacterName, false);
                     dbp = AlskeboUnturnedPlugin.databaseManager.receivePlayer(player.CSteamID);
-                    UnturnedChat.Say(player, "Welcome to Alskebo. Use /info to get started.");
+                    UnturnedChat.Say(player, "Welcome to Alskebo. Type /info to get started.");
                 } else {
                     databaseManager.updatePlayer(player.CSteamID, player.SteamGroupID, player.DisplayName, player.SteamName, player.CharacterName);
                     dbp = AlskeboUnturnedPlugin.databaseManager.receivePlayer(player.CSteamID);
@@ -305,15 +305,18 @@ namespace AlskeboUnturnedPlugin {
                         ushort index;
                         StructureRegion region;
                         if (StructureManager.tryGetInfo(lowestDistanceTransform, out x, out y, out index, out region)) {
-                            Structure structure = region.structures[(int)index].structure;
+                            StructureData structureData = region.structures[(int)index];
+                            Structure structure = structureData.structure;
                             ItemStructureAsset itemStructureAsset = (ItemStructureAsset)Assets.find(EAssetType.ITEM, structure.id);
-                            UnturnedChat.Say(player, "-");
-                            UnturnedChat.Say(player, "Structure status of " + itemStructureAsset.itemName + ":");
-                            UnturnedChat.Say(player, "Health: " + structure.health);
-                            UnturnedChat.Say(player, "Is dead: " + structure.isDead);
+                            new Thread(delegate () {
+                                UnturnedChat.Say(player, "Structure status of " + itemStructureAsset.itemName + " (" + itemStructureAsset.id + "):");
+                                UnturnedChat.Say(player, "Owner: " + databaseManager.getPlayerDisplayName(new CSteamID(structureData.owner)) + " - " + new CSteamID(structureData.owner).ToString());
+                                UnturnedChat.Say(player, "Health: " + structure.health + "/" + structure.asset.health);
+                                UnturnedChat.Say(player, "Last activity: " + Utils.toDelay(structureData.objActiveDate));
+                            }).Start();
                         }
                     } else
-                        UnturnedChat.Say(player, "Could not find any close structures.");
+                        UnturnedChat.Say(player, "Could not find any close structures.", Color.red);
                 } else if (playerManager.getPlayerBoolean(player, "barricadeinfo")) {
                     List<RegionCoordinate> regions = new List<RegionCoordinate>();
                     Regions.getRegionsInRadius(player.Position, 20, regions);
@@ -337,15 +340,18 @@ namespace AlskeboUnturnedPlugin {
                         ushort index;
                         BarricadeRegion region;
                         if (BarricadeManager.tryGetInfo(lowestDistanceTransform, out x, out y, out plant, out index, out region)) {
-                            Barricade barricade = region.barricades[(int)index].barricade;
+                            BarricadeData barricadeData = region.barricades[(int)index];
+                            Barricade barricade = barricadeData.barricade;
                             ItemBarricadeAsset itemBarricadeAsset = (ItemBarricadeAsset)Assets.find(EAssetType.ITEM, barricade.id);
-                            UnturnedChat.Say(player, "-");
-                            UnturnedChat.Say(player, "Barricade status of " + itemBarricadeAsset.itemName + ":");
-                            UnturnedChat.Say(player, "Health: " + barricade.health);
-                            UnturnedChat.Say(player, "Plant: " + plant);
+                            new Thread(delegate () {
+                                UnturnedChat.Say(player, "Structure status of " + itemBarricadeAsset.itemName + " (" + itemBarricadeAsset.id + "):");
+                                UnturnedChat.Say(player, "Owner: " + databaseManager.getPlayerDisplayName(new CSteamID(barricadeData.owner)) + " - " + new CSteamID(barricadeData.owner).ToString());
+                                UnturnedChat.Say(player, "Health: " + barricade.health + "/" + barricade.asset.health);
+                                UnturnedChat.Say(player, "Last activity: " + Utils.toDelay(barricadeData.objActiveDate));
+                            }).Start();
                         }
                     } else
-                        UnturnedChat.Say(player, "Could not find any close barricades.");
+                        UnturnedChat.Say(player, "Could not find any close barricades.", Color.red);
                 }
             }
         }

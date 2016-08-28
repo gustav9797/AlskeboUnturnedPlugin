@@ -50,6 +50,7 @@ namespace AlskeboUnturnedPlugin {
                 String vehicleName = stringId;
                 ushort id = 0;
                 bool found = false;
+                bool usedName = true;
                 if (!ushort.TryParse(stringId, out id)) {
                     Asset[] assets = SDG.Unturned.Assets.find(EAssetType.VEHICLE);
                     foreach (VehicleAsset ia in assets) {
@@ -61,6 +62,7 @@ namespace AlskeboUnturnedPlugin {
                         }
                     }
                 } else {
+                    usedName = false;
                     Asset[] assets = SDG.Unturned.Assets.find(EAssetType.VEHICLE);
                     foreach (VehicleAsset ia in assets) {
                         if (ia != null && ia.id == id) {
@@ -89,7 +91,7 @@ namespace AlskeboUnturnedPlugin {
                     }
 
                     if (command.Length <= 1 || !command[1].Equals("confirm")) {
-                        UnturnedChat.Say(caller, "You are about to buy a " + vehicleName + " for $" + vehiclePrice + ". Confirm with \"/buyvehicle " + id + " confirm\".");
+                        UnturnedChat.Say(caller, "You are about to buy a " + vehicleName + " for $" + vehiclePrice + ". Confirm with \"/buyvehicle " + (usedName ? stringId : id.ToString()) + " confirm\".");
                     } else {
                         EconomyManager.setBalance(player, playerMoney - vehiclePrice);
                         VehicleInfo info = AlskeboUnturnedPlugin.vehicleManager.getOwnedVehicleInfo(AlskeboUnturnedPlugin.vehicleManager.givePlayerOwnedVehicle(player, id, false));

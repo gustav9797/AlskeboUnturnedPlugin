@@ -33,5 +33,30 @@ namespace AlskeboUnturnedPlugin {
         public static int getFuelPercentage(InteractableVehicle vehicle) {
             return (int)Math.Floor(((float)vehicle.fuel / (float)vehicle.asset.fuel) * 100);
         }
+
+        public static string toDelay(uint time) {
+            uint input = Provider.time - time;
+
+            uint days = input / 60 / 60 / 24;
+            input -= days * 24 * 60 * 60;
+
+            uint hours = input / 60 / 60;
+            input -= hours * 60 * 60;
+
+            uint minutes = input / 60;
+            input -= minutes * 60;
+
+            uint seconds = input;                      
+           
+            String s = "";
+            s += (days > 0 ? days + " " + (days == 1 ? "day" : "days") + " " : "");
+            s += (hours > 0 ? hours + " " + (hours == 1 ? "hour" : "hours") + " " : "");
+            if (s == "") {
+                s += (minutes > 0 ? minutes + " " + (minutes == 1 ? "minute" : "minutes") + " " : "");
+                s += input + " " + (seconds == 1 ? "seconds" : "seconds") + " ";
+            }
+            s += "ago";
+            return s;
+        }
     }
 }
