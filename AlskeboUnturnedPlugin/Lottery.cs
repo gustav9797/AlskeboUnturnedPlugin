@@ -34,6 +34,8 @@ namespace AlskeboUnturnedPlugin {
             winnableItems.Add(1111);
             winnableItems.Add(1055);
             winnableItems.Add(1194);
+            winnableItems.Add(1440);
+            winnableItems.Add(1436);
 
             timer = new Timer();
             timer.Interval = 1000;

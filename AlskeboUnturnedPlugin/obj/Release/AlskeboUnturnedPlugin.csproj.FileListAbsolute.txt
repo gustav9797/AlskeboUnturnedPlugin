@@ -13,3 +13,4 @@ C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin
 C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\Rocket.Core.dll
 C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\Rocket.Unturned.dll
 C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\UnityEngine.dll
+C:\Users\Gustav\Documents\GitHub\AlskeboUnturnedPlugin\AlskeboUnturnedPlugin\bin\Release\agsXMPP.dll

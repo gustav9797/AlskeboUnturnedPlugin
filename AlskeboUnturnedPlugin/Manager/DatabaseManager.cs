@@ -73,7 +73,7 @@ namespace AlskeboUnturnedPlugin {
             try {
                 connection = new MySqlConnection(String.Format("SERVER={0};DATABASE={1};UID={2};PASSWORD={3};PORT={4};", databaseIP, database, username, password, "3306"));
             } catch (Exception ex) {
-                Logger.LogException(ex);
+                Rocket.Core.Logging.Logger.LogException(ex);
             }
             return connection;
         }
@@ -90,7 +90,7 @@ namespace AlskeboUnturnedPlugin {
                 reader.Close();
                 connection.Close();
             } catch (Exception e) {
-                Logger.Log(e);
+                Rocket.Core.Logging.Logger.Log(e);
             }
             return exists;
         }
@@ -110,7 +110,7 @@ namespace AlskeboUnturnedPlugin {
                 command.ExecuteNonQuery();
                 connection.Close();
             } catch (Exception e) {
-                Logger.Log(e);
+                Rocket.Core.Logging.Logger.Log(e);
             }
         }
 
@@ -139,7 +139,7 @@ namespace AlskeboUnturnedPlugin {
                 reader.Close();
                 connection.Close();
             } catch (Exception e) {
-                Logger.Log(e);
+                Rocket.Core.Logging.Logger.Log(e);
             }
             return output;
         }
@@ -153,7 +153,7 @@ namespace AlskeboUnturnedPlugin {
                 command.ExecuteNonQuery();
                 connection.Close();
             } catch (Exception e) {
-                Logger.Log(e);
+                Rocket.Core.Logging.Logger.Log(e);
             }
         }
 
@@ -166,7 +166,7 @@ namespace AlskeboUnturnedPlugin {
                 command.ExecuteNonQuery();
                 connection.Close();
             } catch (Exception e) {
-                Logger.Log(e);
+                Rocket.Core.Logging.Logger.Log(e);
             }
         }
 
@@ -195,7 +195,7 @@ namespace AlskeboUnturnedPlugin {
                 connection.Close();
 
             } catch (Exception e) {
-                Logger.Log(e);
+                Rocket.Core.Logging.Logger.Log(e);
             }
             return returnId;
         }
@@ -229,7 +229,7 @@ namespace AlskeboUnturnedPlugin {
                 reader.Close();
                 connection.Close();
             } catch (Exception e) {
-                Logger.Log(e);
+                Rocket.Core.Logging.Logger.Log(e);
             }
             return output;
         }
@@ -256,7 +256,7 @@ namespace AlskeboUnturnedPlugin {
                 command.ExecuteNonQuery();
                 connection.Close();
             } catch (Exception e) {
-                Logger.Log(e);
+                Rocket.Core.Logging.Logger.Log(e);
             }
         }
 
@@ -270,7 +270,7 @@ namespace AlskeboUnturnedPlugin {
                 command.ExecuteNonQuery();
                 connection.Close();
             } catch (Exception e) {
-                Logger.Log(e);
+                Rocket.Core.Logging.Logger.Log(e);
             }
         }
 
@@ -289,7 +289,7 @@ namespace AlskeboUnturnedPlugin {
                 connection.Close();
                 return name;
             } catch (Exception e) {
-                Logger.Log(e);
+                Rocket.Core.Logging.Logger.Log(e);
             }
             return null;
         }
@@ -303,7 +303,7 @@ namespace AlskeboUnturnedPlugin {
                 command.ExecuteNonQuery();
                 connection.Close();
             } catch (Exception e) {
-                Logger.Log(e);
+                Rocket.Core.Logging.Logger.Log(e);
             }
         }
 
@@ -316,7 +316,7 @@ namespace AlskeboUnturnedPlugin {
                 command.ExecuteNonQuery();
                 connection.Close();
             } catch (Exception e) {
-                Logger.Log(e);
+                Rocket.Core.Logging.Logger.Log(e);
             }
         }
 
@@ -333,7 +333,7 @@ namespace AlskeboUnturnedPlugin {
                     command.ExecuteNonQuery();
                     connection.Close();
                 } catch (Exception e) {
-                    Logger.Log(e);
+                    Rocket.Core.Logging.Logger.Log(e);
                 }
             }).Start();
         }
@@ -351,7 +351,7 @@ namespace AlskeboUnturnedPlugin {
                     command.ExecuteNonQuery();
                     connection.Close();
                 } catch (Exception e) {
-                    Logger.Log(e);
+                    Rocket.Core.Logging.Logger.Log(e);
                 }
             }).Start();
         }
@@ -370,7 +370,7 @@ namespace AlskeboUnturnedPlugin {
                 command.ExecuteNonQuery();
                 connection.Close();
             } catch (Exception e) {
-                Logger.Log(e);
+                Rocket.Core.Logging.Logger.Log(e);
             }
         }
     }

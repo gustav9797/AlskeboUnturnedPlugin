@@ -38,6 +38,7 @@ namespace AlskeboUnturnedPlugin {
         private bool loadingVehicles = false;
         private bool levelLoaded = false;
         public static int vehicleDestroyMinutes = 5;
+        public static int vehicleDestroyFuel = 1;
         public static Color vehicleManagerPrefix = Color.gray;
 
         public int NaturalVehicleCount {
@@ -84,24 +85,32 @@ namespace AlskeboUnturnedPlugin {
             Level.onPrePreLevelLoaded += onLatePrePreLevelLoaded;
         }
 
+        /// <summary>
+        /// Delete Vehicles.dat before vehicles are loaded by Unturned.
+        /// Only load vehicles from the database.
+        /// </summary>
+        /// <param name="level"></param>
         public void onPrePreLevelLoaded(int level) {
             Level.onPrePreLevelLoaded -= onPrePreLevelLoaded;
             String fileName = ReadWrite.PATH + ServerSavedata.directory + "/" + Provider.serverID + "/Level/" + Level.info.name + "/Vehicles.dat";
             if (File.Exists(fileName)) {
                 File.Delete(fileName);
-                Logger.Log("Deleted Vehicles.dat.");
+                Rocket.Core.Logging.Logger.Log("Deleted Vehicles.dat.");
             } else
-                Logger.Log("Could not find Vehicles.dat.");
+                Rocket.Core.Logging.Logger.Log("Could not find Vehicles.dat.");
         }
 
+        /// <summary>
+        /// Delete all vehicles loaded and spawned by Unturned.
+        /// Receive all vehicles from the database.
+        /// Spawn all received vehicles.
+        /// </summary>
+        /// <param name="level"></param>
         public void onLatePrePreLevelLoaded(int level) {
             loadingVehicles = true;
             Level.onLevelLoaded -= onLatePrePreLevelLoaded;
 
-            Logger.Log("Receiving owned vehicles from database...");
-            List<DatabaseVehicle> vehicles = AlskeboUnturnedPlugin.databaseManager.receiveOwnedVehicles();
-
-            Logger.Log("Removing all default vehicles (" + VehicleManager.vehicles.Count + ")...");
+            Rocket.Core.Logging.Logger.Log("Removing all default vehicles (" + VehicleManager.vehicles.Count + ")...");
         start:
             foreach (InteractableVehicle v in VehicleManager.vehicles) {
                 if (v != null) {
@@ -115,7 +124,11 @@ namespace AlskeboUnturnedPlugin {
             CustomVehicleManager.customrespawnVehicleIndex = (ushort)0;
             BarricadeManager.clearPlants();
 
-            Logger.Log("Spawning stored vehicles...");
+            Rocket.Core.Logging.Logger.Log("Receiving owned vehicles from database...");
+            List<DatabaseVehicle> vehicles = AlskeboUnturnedPlugin.databaseManager.receiveOwnedVehicles();
+
+            Rocket.Core.Logging.Logger.Log("Map has " + LevelVehicles.spawns.Count + " vehicle spawn points.");
+            Rocket.Core.Logging.Logger.Log("Spawning stored vehicles...");
             foreach (DatabaseVehicle dbv in vehicles) {
 
                 InteractableVehicle vehicle = CustomVehicleManager.customSpawnVehicle(
@@ -133,9 +146,11 @@ namespace AlskeboUnturnedPlugin {
                 vehicle.tellLocked(new CSteamID(dbv.ownerSteamId), new CSteamID(dbv.groupSteamId), dbv.locked);
 
                 storeOwnedVehicle(new CSteamID(dbv.ownerSteamId), new CSteamID(dbv.groupSteamId), vehicle, dbv.isNoob, dbv.id);
+                if (checkVehicleDestroy(vehicleOwners[vehicle.instanceID], vehicle))
+                    Rocket.Core.Logging.Logger.Log("Marked " + vehicle.instanceID + " for removal.");
             }
 
-            Logger.Log("Done.");
+            Rocket.Core.Logging.Logger.Log("Done.");
             loadingVehicles = false;
             levelLoaded = true;
         }
@@ -148,9 +163,9 @@ namespace AlskeboUnturnedPlugin {
             String fileName = ReadWrite.PATH + ServerSavedata.directory + "/" + Provider.serverID + "/Level/" + Level.info.name + "/Vehicles.dat";
             if (File.Exists(fileName)) {
                 File.Delete(fileName);
-                Logger.Log("Deleted Vehicles.dat.");
+                Rocket.Core.Logging.Logger.Log("Deleted Vehicles.dat.");
             } else
-                Logger.Log("Could not find Vehicles.dat.");
+                Rocket.Core.Logging.Logger.Log("Could not find Vehicles.dat.");
         }
 
         public void onPlayerEnterVehicle(UnturnedPlayer player, InteractableVehicle vehicle) {
@@ -162,7 +177,7 @@ namespace AlskeboUnturnedPlugin {
             if (!vehicleOwners.ContainsKey(vehicle.instanceID)) {
                 // Vehicle was spawned with /v or unturned respawned it
                 long databaseId = storeOwnedVehicle(new CSteamID(0), new CSteamID(0), vehicle, false);
-                Logger.Log("Stored naturally spawned vehicle with ID " + databaseId + ".");
+                Rocket.Core.Logging.Logger.Log("Stored naturally spawned vehicle with ID " + databaseId + ".");
             }
 
             CSteamID owner = getVehicleOwner(player.CurrentVehicle);
@@ -179,8 +194,7 @@ namespace AlskeboUnturnedPlugin {
                     UnturnedChat.Say(player, "This " + vehicleName + " belongs to " + ownerName + ".", vehicleManagerPrefix);
                     UnturnedChat.Say(owner, "Your " + vehicle.asset.Name + " was stolen!");
                 }
-            } else
-                UnturnedChat.Say(player, "This natural " + vehicleName + " will despawn when inactive.", vehicleManagerPrefix);
+            }
 
         }
 
@@ -189,7 +203,7 @@ namespace AlskeboUnturnedPlugin {
                 VehicleInfo info = getOwnedVehicleInfo(vehicle);
                 if (info != null) {
                     if (checkVehicleDestroy(info, vehicle))
-                        UnturnedChat.Say(player, "This vehicle despawns in " + vehicleDestroyMinutes + " minutes. Abort the process by entering it.", vehicleManagerPrefix);
+                        UnturnedChat.Say(player, "This vehicle despawns in " + vehicleDestroyMinutes + " minutes. Abort the process by refueling it.", vehicleManagerPrefix);
 
                     if (!lastSave.ContainsKey(vehicle.instanceID) || !isSimilar(vehicle, lastSave[vehicle.instanceID])) {
                         DatabaseVehicle dbv = DatabaseVehicle.fromInteractableVehicle(info.databaseId, info.ownerId.m_SteamID, info.groupId.m_SteamID, info.isNoob, vehicle);
@@ -204,32 +218,38 @@ namespace AlskeboUnturnedPlugin {
             }
         }
 
+        /// <summary>
+        /// Destroy vehicles that are in the vehiclesToBeDestroyed-list.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void destroyVehicles(object sender, ElapsedEventArgs e) {
             TaskDispatcher.QueueOnMainThread(new System.Action(delegate () {
                 List<uint> toRemove = new List<uint>();
                 foreach (KeyValuePair<uint, DestroyingVehicleInfo> pair in vehiclesToBeDestroyed) {
-                    if (!pair.Value.vehicle.isDead && (DateTime.Now - pair.Value.lastActivity).Minutes >= vehicleDestroyMinutes) {
-                        InteractableVehicle vehicle = pair.Value.vehicle;
-                        if (pair.Value.timesHonked >= 20) {
-                            int num2 = UnityEngine.Random.Range(8, 15);
-                            for (int j = 0; j < num2; j++) {
-                                float f = UnityEngine.Random.Range((float)0f, (float)6.283185f);
-                                ItemManager.dropItem(new Item(0x43, EItemOrigin.NATURE), vehicle.transform.position + new Vector3(Mathf.Sin(f) * 3f, 1f, Mathf.Cos(f) * 3f), false, Dedicator.isDedicated, true);
+                    if (!pair.Value.vehicle.isDead && getFuelPercentage(pair.Value.vehicle) < vehicleDestroyFuel) {
+                        if ((DateTime.Now - pair.Value.lastActivity).Minutes >= vehicleDestroyMinutes) {
+                            InteractableVehicle vehicle = pair.Value.vehicle;
+                            if (pair.Value.timesHonked >= 20) {
+                                int num2 = UnityEngine.Random.Range(8, 15);
+                                for (int j = 0; j < num2; j++) {
+                                    float f = UnityEngine.Random.Range((float)0f, (float)6.283185f);
+                                    ItemManager.dropItem(new Item(0x43, EItemOrigin.NATURE), vehicle.transform.position + new Vector3(Mathf.Sin(f) * 3f, 1f, Mathf.Cos(f) * 3f), false, Dedicator.isDedicated, true);
+                                }
+                                pair.Value.vehicle.isExploded = true;
+                                toRemove.Add(pair.Value.vehicle.instanceID);
+                            } else if (!pair.Value.lastHonked) {
+                                CustomVehicleManager.sendVehicleHeadlights(vehicle);
+                                EffectManager.sendEffect(vehicleDestroySounds[r.Next(vehicleDestroySounds.Count - 1)], 200, vehicle.transform.position);
+                                pair.Value.lastHonked = true;
+                                ++pair.Value.timesHonked;
+                            } else {
+                                pair.Value.lastHonked = false;
                             }
-                            pair.Value.vehicle.isExploded = true;
-                            toRemove.Add(pair.Value.vehicle.instanceID);
-                        } else if (!pair.Value.lastHonked) {
-                            CustomVehicleManager.sendVehicleHeadlights(vehicle);
-                            EffectManager.sendEffect(vehicleDestroySounds[r.Next(vehicleDestroySounds.Count - 1)], 200, vehicle.transform.position);
-                            pair.Value.lastHonked = true;
-                            ++pair.Value.timesHonked;
-                        } else {
-                            pair.Value.lastHonked = false;
                         }
 
-                    } else if (pair.Value.vehicle.isDead) {
+                    } else
                         toRemove.Add(pair.Value.vehicle.instanceID);
-                    }
                 }
                 foreach (uint r in toRemove) {
                     vehiclesToBeDestroyed.Remove(r);
@@ -242,7 +262,7 @@ namespace AlskeboUnturnedPlugin {
         }
 
         public bool checkVehicleDestroy(VehicleInfo info, InteractableVehicle vehicle) {
-            if (info.isNatural && vehicle.isEmpty) {
+            if (info.isNatural && vehicle.isEmpty && getFuelPercentage(vehicle) < vehicleDestroyFuel) {
                 if (!vehiclesToBeDestroyed.ContainsKey(vehicle.instanceID)) {
                     DestroyingVehicleInfo destroyingInfo = new DestroyingVehicleInfo();
                     destroyingInfo.vehicle = vehicle;
@@ -252,6 +272,10 @@ namespace AlskeboUnturnedPlugin {
                 return true;
             }
             return false;
+        }
+
+        public int getFuelPercentage(InteractableVehicle vehicle) {
+            return (int)Math.Floor(((float)vehicle.fuel / (float)vehicle.asset.fuel) * 100);
         }
 
         private void saveVehicles(object sender, ElapsedEventArgs e) {
@@ -266,7 +290,7 @@ namespace AlskeboUnturnedPlugin {
                     if (!vehicleOwners.ContainsKey(vehicle.instanceID) && !vehicle.isExploded && !vehicle.isDrowned && !vehicle.isDead) {
                         // Vehicle was spawned with /v or unturned respawned it
                         long databaseId = storeOwnedVehicle(new CSteamID(0), new CSteamID(0), vehicle, false);
-                        Logger.Log("Stored naturally spawned vehicle with ID " + databaseId + " and instanceID " + vehicle.instanceID + ".");
+                        Rocket.Core.Logging.Logger.Log("Stored naturally spawned vehicle with ID " + databaseId + " and instanceID " + vehicle.instanceID + ".");
                     }
                 }
 
@@ -328,7 +352,7 @@ namespace AlskeboUnturnedPlugin {
         public InteractableVehicle spawnNaturalVehicle(Vector3 pos, Quaternion angle, ushort carId) {
             InteractableVehicle vehicle = CustomVehicleManager.customSpawnVehicle(carId, pos, angle);
             long databaseId = storeOwnedVehicle(new CSteamID(0), new CSteamID(0), vehicle, false, -1);
-            Logger.Log("Spawned natural vehicle with ID " + databaseId + " and instanceID " + vehicle.instanceID + ".");
+            Rocket.Core.Logging.Logger.Log("Spawned natural vehicle with ID " + databaseId + " and instanceID " + vehicle.instanceID + ".");
             return vehicle;
         }
 
@@ -408,12 +432,12 @@ namespace AlskeboUnturnedPlugin {
             if (playerOwnedVehicles.ContainsKey(info.ownerId)) {
                 List<VehicleInfo> infos = playerOwnedVehicles[info.ownerId];
                 if (!infos.Remove(info))
-                    Logger.LogWarning("Could not remove from playerOwnedVehicles");
+                    Rocket.Core.Logging.Logger.LogWarning("Could not remove from playerOwnedVehicles");
                 else
                     playerOwnedVehicles[info.ownerId] = infos;
             }
             if (!vehicleOwners.Remove(info.instanceId)) {
-                Logger.LogWarning("Could not remove from vehicleOwners");
+                Rocket.Core.Logging.Logger.LogWarning("Could not remove from vehicleOwners");
             }
             logData += reason.ToString();
 
@@ -424,7 +448,7 @@ namespace AlskeboUnturnedPlugin {
                 lastSave.Remove(info.instanceId);
 
             AlskeboUnturnedPlugin.databaseManager.logVehicleAsync(info.databaseId, VehicleLogType.DESTROY, logData);
-            Logger.Log("Deleted exploded/drowned/dead vehicle with ID " + info.databaseId + " and instanceID " + info.instanceId + ". (" + reason.ToString() + ") " + (info.isNatural ? "natural" : ""));
+            Rocket.Core.Logging.Logger.Log("Deleted exploded/drowned/dead vehicle with ID " + info.databaseId + " and instanceID " + info.instanceId + ". (" + reason.ToString() + ") " + (info.isNatural ? "natural" : ""));
         }
 
         private static InteractableVehicle giveVehicle(UnturnedPlayer player, ushort id) {
@@ -482,7 +506,7 @@ namespace AlskeboUnturnedPlugin {
                 vehicleOwners[vehicle.instanceID] = info;
 
             } else
-                Logger.LogWarning("Could not store lock state");
+                Rocket.Core.Logging.Logger.LogWarning("Could not store lock state");
         }
 
         public void setOwnedVehicleLocked(InteractableVehicle vehicle, bool locked) {
@@ -492,7 +516,7 @@ namespace AlskeboUnturnedPlugin {
                 vehicle.tellLocked(info.ownerId, info.groupId, locked);
                 CustomVehicleManager.sendForceVehicleLock(vehicle, info.ownerId, info.groupId, locked);
             } else
-                Logger.LogWarning("Could not lock non-owned vehicle");
+                Rocket.Core.Logging.Logger.LogWarning("Could not lock non-owned vehicle");
         }
 
     }

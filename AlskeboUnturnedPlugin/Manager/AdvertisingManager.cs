@@ -15,13 +15,12 @@ namespace AlskeboUnturnedPlugin {
 
         public AdvertisingManager() {
             timer = new Timer();
-            timer.Interval = 1000 * 60 * 2; // Every x minutes
+            timer.Interval = 1000 * 60 * 5; // Every x minutes
             timer.Elapsed += Timer_Elapsed;
 
             messages.Add("Natural cars respawn after " + AlskeboVehicleManager.vehicleDestroyMinutes + " minutes idle.");
-            messages.Add("Cars have 5x HP. Buildables have 2x HP.");
-            messages.Add("You can view structure health with the command \"/sinfo\".");
-            messages.Add("You can view barricade health with the command \"/binfo\".");
+            messages.Add("You can view structure info with the command \"/sinfo\".");
+            messages.Add("You can view barricade info with the command \"/binfo\".");
             messages.Add("Alskebo.com has many custom features. Take a look in \"/p\".");
             messages.Add("Buy vehicles with \"/buyvehicle <id/name>\".");
             messages.Add("Admin abuse is nonexistent in this server.");
@@ -34,6 +33,7 @@ namespace AlskeboUnturnedPlugin {
             messages.Add("Buy a lottery ticket for a chance to win some great loot! (\"/buyticket\")");
             messages.Add("Lock your vehicles remotely. (\"/lock\")");
             messages.Add("Unlock your vehicles remotely. (\"/lock\")");
+            messages.Add("Check out the website at http://Alskebo.com.");
 
             timer.Start();
         }

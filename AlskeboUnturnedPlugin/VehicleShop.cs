@@ -19,6 +19,7 @@ namespace AlskeboUnturnedPlugin {
             buyableVehicles.Add(75, 50); //golfcart
             buyableVehicles.Add(91, 50); //makeshift small
             buyableVehicles.Add(97, 50); //runabout
+            buyableVehicles.Add(122, 50); //luggage car
 
             for (ushort i = 1; i <= 50; ++i) { //Offroader,hatchback,truck,sedan,van,roadster
                 if (i != 33 && i != 34)
@@ -52,6 +53,7 @@ namespace AlskeboUnturnedPlugin {
             buyableVehicles.Add(92, 150); //sandpiper
             buyableVehicles.Add(96, 150); //otter
             buyableVehicles.Add(108, 150); //police launch
+            buyableVehicles.Add(123, 150); //ghost
 
             buyableVehicles.Add(119, 200); //russian apc
             buyableVehicles.Add(53, 200); //forest apc
@@ -62,13 +64,17 @@ namespace AlskeboUnturnedPlugin {
             buyableVehicles.Add(95, 200); //skycrane
             buyableVehicles.Add(107, 200); //hummingbird
             buyableVehicles.Add(106, 200); //policeheli
+            buyableVehicles.Add(134, 200); //orca
+            buyableVehicles.Add(133, 200); //annushka
 
-            buyableVehicles.Add(120, 250); //forest tank
-            buyableVehicles.Add(121, 250); //desert tank
+            buyableVehicles.Add(120, 300); //forest tank
+            buyableVehicles.Add(121, 300); //desert tank
+            buyableVehicles.Add(137, 300); //russian tank
+            buyableVehicles.Add(135, 250); //hind
 
             for (ushort i = 1; i <= 121; ++i) {
                 if (!buyableVehicles.ContainsKey(i))
-                    Logger.LogWarning("Vehicle ID " + i + " is not buyable.");
+                    Rocket.Core.Logging.Logger.LogWarning("Vehicle ID " + i + " is not buyable.");
             }
         }
 

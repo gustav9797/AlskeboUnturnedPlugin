@@ -27,9 +27,9 @@ namespace AlskeboUnturnedPlugin {
 
         private void backup(object sender, ElapsedEventArgs e) {
             if (Provider.clients.Count > 0) {
-                Logger.Log("Creating a backup...");
+                Rocket.Core.Logging.Logger.Log("Creating a backup...");
                 doBackup(new System.Action(delegate () {
-                    Logger.Log("Done.");
+                    Rocket.Core.Logging.Logger.Log("Done.");
                 }));
             }
         }
@@ -64,7 +64,7 @@ namespace AlskeboUnturnedPlugin {
                 info.RedirectStandardOutput = true;
                 var p = Process.Start(info);
                 p.ErrorDataReceived += new DataReceivedEventHandler(delegate (object s, DataReceivedEventArgs e) {
-                    Logger.Log(e.Data);
+                    Rocket.Core.Logging.Logger.Log(e.Data);
                 });
                 p.StandardOutput.ReadToEnd();
                 p.BeginErrorReadLine();
@@ -77,7 +77,7 @@ namespace AlskeboUnturnedPlugin {
                     if (File.Exists(tempFile)) {
                         zip.AddFile(tempFile, "");
                     } else
-                        Logger.LogWarning("Could not find mysqldump file for backup.");
+                        Rocket.Core.Logging.Logger.LogWarning("Could not find mysqldump file for backup.");
 
                     zip.Save(backupFile);
                 }

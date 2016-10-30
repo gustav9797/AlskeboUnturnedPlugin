@@ -170,7 +170,7 @@ namespace AlskeboUnturnedPlugin {
 
         public static void spawnNaturalVehicles() {
             VehicleSpawnpoint spawn = null;
-            if (AlskeboUnturnedPlugin.vehicleManager.NaturalVehicleCount < Level.vehicles) {
+            if (AlskeboUnturnedPlugin.vehicleManager.NaturalVehicleCount < (Level.vehicles + (LevelVehicles.spawns.Count - Level.vehicles) / 2)) {
                 spawn = LevelVehicles.spawns[UnityEngine.Random.Range(0, LevelVehicles.spawns.Count)];
                 for (ushort i = 0; i < VehicleManager.vehicles.Count; i = (ushort)(i + 1)) {
                     Vector3 vector2 = VehicleManager.vehicles[i].transform.position - spawn.point;

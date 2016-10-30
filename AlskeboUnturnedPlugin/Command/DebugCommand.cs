@@ -33,6 +33,8 @@ namespace AlskeboUnturnedPlugin {
 
         public void Execute(IRocketPlayer caller, string[] command) {
             UnturnedPlayer player = (UnturnedPlayer)caller;
+            UnturnedChat.Say(player, "There are " + AlskeboUnturnedPlugin.vehicleManager.NaturalVehicleCount + " natural vehicles.");
+            return;
             //Lottery.win(player);
             for (int i = 0; i < 50; ++i) {
                 //DamageTool.explode(player.Position, 8f, EDeathCause.VEHICLE, 200f, 200f, 200f, 0f, 0f, 500f, 2000f, 500f);

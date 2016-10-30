@@ -27,6 +27,8 @@ namespace AlskeboUnturnedPlugin {
         public static BackupManager backupManager;
         public static Lottery lottery;
         public static System.Random r = new System.Random();
+        //public static XmppClientConnection xmpp;
+        //Jid room = new Jid("unturned@conference.alskebo.com");
 
         public static AlskeboConfiguration Config { get { return AlskeboUnturnedPlugin.instance.Configuration.Instance; } }
 
@@ -50,7 +52,7 @@ namespace AlskeboUnturnedPlugin {
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerDeath += onPlayerDeath;
 
             if (wasUnloaded) {
-                Logger.LogWarning("\tRe-sending onPlayerConnected calls");
+                Rocket.Core.Logging.Logger.LogWarning("\tRe-sending onPlayerConnected calls");
                 foreach (SteamPlayer player in Provider.clients) {
                     onPlayerConnected(UnturnedPlayer.FromSteamPlayer(player));
                 }
@@ -59,7 +61,19 @@ namespace AlskeboUnturnedPlugin {
 
             Level.onLevelLoaded += onLevelLoaded;
 
-            Logger.LogWarning("\tAlskeboPlugin Loaded Sucessfully");
+            /*xmpp = new XmppClientConnection("alskebo.com");
+            xmpp.Open("ChatBot", Config.password);
+            xmpp.OnLogin += delegate (object sender) {
+                MucManager muc = new MucManager(xmpp);
+                muc.JoinRoom(room, "ChatBot");
+                xmpp.OnMessage += delegate (object sender2, Message message) {
+                    if (message.From.Resource == "ChatBot")
+                        return;
+                    UnturnedChat.Say("[Webchat] " + message.From.Resource + ": " + message.Body);
+                };
+            };*/
+
+            Rocket.Core.Logging.Logger.LogWarning("\tAlskeboPlugin Loaded Sucessfully");
         }
 
         public override void UnloadPlugin(PluginState state = PluginState.Unloaded) {
@@ -73,7 +87,7 @@ namespace AlskeboUnturnedPlugin {
             Rocket.Unturned.Events.UnturnedPlayerEvents.OnPlayerDeath -= onPlayerDeath;
 
             wasUnloaded = true;
-            Logger.LogWarning("\tAlskeboPlugin Unloaded");
+            Rocket.Core.Logging.Logger.LogWarning("\tAlskeboPlugin Unloaded");
         }
 
         private void onPlayerDeath(UnturnedPlayer player, EDeathCause cause, ELimb limb, CSteamID murderer) {
@@ -217,6 +231,9 @@ namespace AlskeboUnturnedPlugin {
         }
 
         private void onPlayerChatted(UnturnedPlayer player, ref Color color, string message, EChatMode chatMode, ref bool cancel) {
+            //if (chatMode == EChatMode.GLOBAL && !message.StartsWith("/")) {
+                //xmpp.Send(new Message(room, MessageType.groupchat, "[In-Game] " + player.DisplayName + ": " + message));
+            //}
             databaseManager.logPlayerAsync(player.CSteamID, PlayerLogType.CHAT, message);
         }
 
@@ -231,7 +248,7 @@ namespace AlskeboUnturnedPlugin {
                         LevelObject o = list[i];
                         if (o.asset.interactability == EObjectInteractability.DROPPER) {
                             if (o.asset.name.Equals("ATM_0")) {
-                                Logger.Log("Disabled ATM at " + o.transform.position.ToString());
+                                Rocket.Core.Logging.Logger.Log("Disabled ATM at " + o.transform.position.ToString());
                                 InteractableObjectDropper d = o.transform.gameObject.GetComponent<InteractableObjectDropper>();
                                 UnityEngine.Transform.Destroy(d);
                                 disabledATMs++;
@@ -241,7 +258,7 @@ namespace AlskeboUnturnedPlugin {
                 }
             }
             if (disabledATMs < 6) {
-                Logger.Log("Not all 6 ATMs were disabled.");
+                Rocket.Core.Logging.Logger.Log("Not all 6 ATMs were disabled.");
             }
         }
 
