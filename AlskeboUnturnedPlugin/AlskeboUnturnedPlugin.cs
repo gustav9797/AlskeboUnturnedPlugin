@@ -232,7 +232,7 @@ namespace AlskeboUnturnedPlugin {
 
         private void onPlayerChatted(UnturnedPlayer player, ref Color color, string message, EChatMode chatMode, ref bool cancel) {
             //if (chatMode == EChatMode.GLOBAL && !message.StartsWith("/")) {
-                //xmpp.Send(new Message(room, MessageType.groupchat, "[In-Game] " + player.DisplayName + ": " + message));
+            //xmpp.Send(new Message(room, MessageType.groupchat, "[In-Game] " + player.DisplayName + ": " + message));
             //}
             databaseManager.logPlayerAsync(player.CSteamID, PlayerLogType.CHAT, message);
         }
@@ -263,7 +263,12 @@ namespace AlskeboUnturnedPlugin {
         }
 
         private void onPlayerConnected(UnturnedPlayer player) {
-            UnturnedChat.Say(player.DisplayName + " has connected.");
+            Provider.Players.ForEach(steamPlayer => {
+                UnturnedPlayer p = UnturnedPlayer.FromSteamPlayer(steamPlayer);
+                if (p.CSteamID != player.CSteamID)
+                    UnturnedChat.Say(p, player.DisplayName + " has connected.");
+            });
+
             databaseManager.logPlayerAsync(player.CSteamID, PlayerLogType.CONNECT);
             playerManager.onPlayerConnected(player);
 
@@ -272,7 +277,7 @@ namespace AlskeboUnturnedPlugin {
                 if (!databaseManager.playerExists(player.CSteamID)) {
                     databaseManager.insertPlayer(player.CSteamID, player.SteamGroupID, player.DisplayName, player.SteamName, player.CharacterName, false);
                     dbp = AlskeboUnturnedPlugin.databaseManager.receivePlayer(player.CSteamID);
-                    UnturnedChat.Say(player, "Welcome to Alskebo. Type /info to get started.");
+                    UnturnedChat.Say(player, "Welcome to Alskebo.");
                 } else {
                     databaseManager.updatePlayer(player.CSteamID, player.SteamGroupID, player.DisplayName, player.SteamName, player.CharacterName);
                     dbp = AlskeboUnturnedPlugin.databaseManager.receivePlayer(player.CSteamID);
@@ -280,6 +285,7 @@ namespace AlskeboUnturnedPlugin {
                     UnturnedChat.Say(player, "Welcome back. Your last login was " + (timeSpan.Days >= 1 ? (timeSpan.Days + " days and ") : "") + (timeSpan.Hours >= 1 ? (timeSpan.Hours + " hours and ") : "") + timeSpan.Minutes + " minutes ago.");
                     databaseManager.setPlayerLastJoin(player.CSteamID);
                 }
+                UnturnedChat.Say(player, "Type /help for help. Type /vote to vote.", UnturnedChat.GetColorFromRGB(255, 215, 0));
 
                 playerManager.setPlayerData(player, "balance", dbp.balance);
                 playerManager.setPlayerData(player, "receivedvehicle", dbp.receivedVehicle);

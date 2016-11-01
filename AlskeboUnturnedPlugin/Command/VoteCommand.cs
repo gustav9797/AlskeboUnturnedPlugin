@@ -10,17 +10,17 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace AlskeboUnturnedPlugin {
-    public class InfoCommand : IRocketCommand {
+    public class VoteCommand : IRocketCommand {
         public AllowedCaller AllowedCaller {
             get { return AllowedCaller.Player; }
         }
 
         public string Name {
-            get { return "Info"; }
+            get { return "Vote"; }
         }
 
         public string Help {
-            get { return "Info command."; }
+            get { return "Vote command."; }
         }
 
         public string Syntax {
@@ -30,23 +30,21 @@ namespace AlskeboUnturnedPlugin {
         public List<string> Aliases {
             get {
                 List<string> a = new List<string>();
-                a.Add("Help");
-                a.Add("Guide");
-                a.Add("Information");
-                a.Add("Guide");
+                a.Add("votee");
+                a.Add("vot");
                 return a;
             }
         }
 
         public void Execute(IRocketPlayer caller, string[] command) {
             UnturnedPlayer player = (UnturnedPlayer)caller;
-            player.Player.channel.send("askBrowserRequest", player.CSteamID, ESteamPacket.UPDATE_RELIABLE_BUFFER, "Guide", "http://alskebo.com/guide.php");
+            player.Player.channel.send("askBrowserRequest", player.CSteamID, ESteamPacket.UPDATE_RELIABLE_BUFFER, "Vote", "http://alskebo.com/vote.php");
         }
 
         public List<string> Permissions {
             get {
                 List<String> list = new List<string>();
-                list.Add("a.info");
+                list.Add("a.vote");
                 return list;
             }
         }

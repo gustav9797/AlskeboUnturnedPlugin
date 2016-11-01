@@ -15,25 +15,18 @@ namespace AlskeboUnturnedPlugin {
 
         public AdvertisingManager() {
             timer = new Timer();
-            timer.Interval = 1000 * 60 * 5; // Every x minutes
+            timer.Interval = 1000 * 60 * 2; // Every x minutes
             timer.Elapsed += Timer_Elapsed;
 
-            messages.Add("Natural cars respawn after " + AlskeboVehicleManager.vehicleDestroyMinutes + " minutes idle.");
-            messages.Add("You can view structure info with the command \"/sinfo\".");
-            messages.Add("You can view barricade info with the command \"/binfo\".");
-            messages.Add("Alskebo.com has many custom features. Take a look in \"/p\".");
-            messages.Add("Buy vehicles with \"/buyvehicle <id/name>\".");
+            messages.Add("Natural cars respawn after 5 minutes idle with a fuel level below 1%.");
+            messages.Add("Alskebo.com has many custom features. Take a look at the guide: \"/guide\".");
             messages.Add("Admin abuse is nonexistent in this server.");
             messages.Add("Natural vehicles can't be locked. You can drive them all!");
-            messages.Add("You can view your owned vehicles with \"/myvehicles\".");
-            messages.Add("When you find money items you can deposit them with \"/depositmoney\".");
-            messages.Add("To check your balance, use \"/balance\".");
-            messages.Add("Use \"/info\" to display all help messages.");
+            messages.Add("Type \"/help\" to show useful help.");
             messages.Add("You can only lock your own vehicles.");
             messages.Add("Buy a lottery ticket for a chance to win some great loot! (\"/buyticket\")");
-            messages.Add("Lock your vehicles remotely. (\"/lock\")");
-            messages.Add("Unlock your vehicles remotely. (\"/lock\")");
-            messages.Add("Check out the website at http://Alskebo.com.");
+            messages.Add("Check out the website! Type \"/website\".");
+            messages.Add("Type \"/vote\" and vote, then type \"/reward\" to get a reward.");
 
             timer.Start();
         }
@@ -55,7 +48,7 @@ namespace AlskeboUnturnedPlugin {
                 displayMessage();
                 return;
             }
-            UnturnedChat.Say(prefix + " " + message, UnityEngine.Color.yellow);
+            UnturnedChat.Say(prefix + " " + message, UnturnedChat.GetColorFromRGB(255, 215, 0));
             lastMessage = message;
         }
     }
